@@ -21,7 +21,3 @@ Jetris is designed for Linux terminals with truecolor support. With minor adjust
 2. Run the game:  
    ```bash
    java Jetris
-   ```  
-
-**Notes:**  
-- This is a learning project and intentionally minimalistic.
