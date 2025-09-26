@@ -1,6 +1,6 @@
 import util.UtilFunctions;
 
-public class Main {
+public class Jetris {
   static final int[] GRID_SIZE = {10, 20};
   static final String PRINT_CHAR = "██";
 
