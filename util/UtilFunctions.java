@@ -3,10 +3,11 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import javax.sound.sampled.*;
+import org.jline.terminal.*;
 import tetrominoes.*;
 
 public class UtilFunctions {
-  public static void printColored(Colors color) {
+  public static void printColored(PieceProps color) {
     String ansi = String.format("\u001b[38;2;%d;%d;%dm", color.getR(), color.getG(), color.getB());
     String reset = "\u001b[0m";
     System.out.print(ansi + "██" + reset);
@@ -44,5 +45,13 @@ public class UtilFunctions {
       moveCursorTo(x - 12, y - 8 + i);
       System.out.print(logo[i]);
     }
+  }
+
+  public static void endGame(Terminal terminal) throws Exception {
+    System.out.print("\033[2J\033[H");
+    System.out.print("\033[?25h");
+    System.out.flush();
+    terminal.close();
+    System.exit(0);
   }
 }

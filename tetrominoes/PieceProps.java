@@ -1,6 +1,6 @@
 package tetrominoes;
 
-public enum Colors {
+public enum PieceProps {
   CYAN('I', 0, 255, 255),
   YELLOW('O', 255, 255, 0),
   MAGENTA('T', 128, 0, 128),
@@ -12,7 +12,7 @@ public enum Colors {
   private final char piece;
   private final int r, g, b;
 
-  Colors(char piece, int r, int g, int b) {
+  PieceProps(char piece, int r, int g, int b) {
     this.piece = piece;
     this.r = r;
     this.g = g;
@@ -36,7 +36,7 @@ public enum Colors {
   }
 
   public static boolean isValidPiece(char c) {
-    for (Colors color : Colors.values()) {
+    for (PieceProps color : PieceProps.values()) {
       if (color.piece == c) {
         return true;
       }
@@ -44,8 +44,8 @@ public enum Colors {
     return false;
   }
 
-  public static Colors fromPiece(char c) {
-    for (Colors color : Colors.values()) {
+  public static PieceProps fromPiece(char c) {
+    for (PieceProps color : PieceProps.values()) {
       if (color.piece == c) {
         return color;
       }

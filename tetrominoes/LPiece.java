@@ -2,7 +2,7 @@ package tetrominoes;
 
 public class LPiece extends Tetromino {
   public LPiece(int positionX, int positionY) {
-    super(Colors.fromPiece('L'), positionX, positionY);
+    super(PieceProps.fromPiece('L'), positionX, positionY);
   }
 
   @Override
@@ -15,10 +15,10 @@ public class LPiece extends Tetromino {
       case 0:
         this.piecesCoords =
             new int[][] {
-              {positionY - 1, positionX},
               {positionY, positionX},
-              {positionY + 1, positionX},
-              {positionY + 1, positionX + 1}
+              {positionY, positionX + 1},
+              {positionY - 1, positionX + 1},
+              {positionY, positionX - 1}
             };
         break;
 
@@ -28,10 +28,10 @@ public class LPiece extends Tetromino {
       case 1:
         this.piecesCoords =
             new int[][] {
-              {positionY, positionX + 1},
               {positionY, positionX},
-              {positionY, positionX - 1},
-              {positionY + 1, positionX - 1}
+              {positionY - 1, positionX},
+              {positionY + 1, positionX},
+              {positionY + 1, positionX + 1}
             };
         break;
 
@@ -41,10 +41,10 @@ public class LPiece extends Tetromino {
       case 2:
         this.piecesCoords =
             new int[][] {
-              {positionY - 1, positionX},
               {positionY, positionX},
-              {positionY + 1, positionX},
-              {positionY - 1, positionX - 1}
+              {positionY, positionX + 1},
+              {positionY, positionX + 1},
+              {positionY + 1, positionX - 1}
             };
         break;
 
@@ -54,10 +54,10 @@ public class LPiece extends Tetromino {
       case 3:
         this.piecesCoords =
             new int[][] {
-              {positionY, positionX + 1},
               {positionY, positionX},
-              {positionY, positionX - 1},
-              {positionY - 1, positionX + 1}
+              {positionY - 1, positionX},
+              {positionY - 1, positionX - 1},
+              {positionY + 1, positionX}
             };
         break;
 

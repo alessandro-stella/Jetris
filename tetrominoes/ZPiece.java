@@ -2,7 +2,7 @@ package tetrominoes;
 
 public class ZPiece extends Tetromino {
   public ZPiece(int positionX, int positionY) {
-    super(Colors.fromPiece('Z'), positionX, positionY);
+    super(PieceProps.fromPiece('Z'), positionX, positionY);
   }
 
   @Override

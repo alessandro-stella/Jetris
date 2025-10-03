@@ -2,7 +2,7 @@ package tetrominoes;
 
 public class SPiece extends Tetromino {
   public SPiece(int positionX, int positionY) {
-    super(Colors.fromPiece('S'), positionX, positionY);
+    super(PieceProps.fromPiece('S'), positionX, positionY);
   }
 
   @Override
@@ -15,9 +15,9 @@ public class SPiece extends Tetromino {
         this.piecesCoords =
             new int[][] {
               {positionY, positionX},
-              {positionY, positionX + 1},
-              {positionY + 1, positionX - 1},
-              {positionY + 1, positionX}
+              {positionY - 1, positionX + 1},
+              {positionY - 1, positionX},
+              {positionY, positionX - 1}
             };
         break;
 
@@ -28,9 +28,9 @@ public class SPiece extends Tetromino {
         this.piecesCoords =
             new int[][] {
               {positionY, positionX},
-              {positionY + 1, positionX},
-              {positionY + 1, positionX + 1},
-              {positionY + 2, positionX + 1}
+              {positionY - 1, positionX},
+              {positionY, positionX + 1},
+              {positionY + 1, positionX + 1}
             };
         break;
 
@@ -40,10 +40,10 @@ public class SPiece extends Tetromino {
       case 2:
         this.piecesCoords =
             new int[][] {
+              {positionY, positionX},
+              {positionY, positionX + 1},
               {positionY + 1, positionX},
-              {positionY + 1, positionX + 1},
-              {positionY + 2, positionX - 1},
-              {positionY + 2, positionX}
+              {positionY + 1, positionX - 1}
             };
         break;
 
@@ -54,9 +54,9 @@ public class SPiece extends Tetromino {
         this.piecesCoords =
             new int[][] {
               {positionY, positionX},
-              {positionY + 1, positionX - 1},
-              {positionY + 1, positionX},
-              {positionY + 2, positionX - 1}
+              {positionY - 1, positionX - 1},
+              {positionY, positionX - 1},
+              {positionY + 1, positionX}
             };
         break;
     }

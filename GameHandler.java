@@ -9,6 +9,10 @@ public class GameHandler {
   public int topLeftY;
   public char[][] gameState;
   public char pieceInHold;
+  public Tetromino currentPiece;
+  public char[] nextPieces;
+
+  private final TetrominoGenerator generator = new TetrominoGenerator();
 
   public GameHandler(int sizeX, int sizeY, int topLeftX, int topLeftY) {
     this.score = 0;
@@ -19,39 +23,43 @@ public class GameHandler {
     this.gameState = new char[sizeY][sizeX];
   }
 
+  public void clearBoard() {
+    for (int i = 0; i < sizeY; i++) {
+      UtilFunctions.moveCursorTo(topLeftX, topLeftY + i);
+      for (int j = 0; j < sizeX; j++) {
+        System.out.print("  ");
+      }
+    }
+  }
+
+  public void clearState() {
+    this.gameState = new char[this.sizeY][this.sizeX];
+  }
+
   public void drawState() {
     for (int i = 0; i < sizeY; i++) {
+      UtilFunctions.moveCursorTo(topLeftX, topLeftY + i);
+
       for (int j = 0; j < sizeX; j++) {
-        if (Colors.isValidPiece(gameState[i][j])) {
-          UtilFunctions.moveCursorTo(topLeftX + j * 2, topLeftY + i);
-          UtilFunctions.printColored(Colors.fromPiece(gameState[i][j]));
+        if (PieceProps.isValidPiece(gameState[i][j])) {
+          UtilFunctions.printColored(PieceProps.fromPiece(gameState[i][j]));
+        } else {
+          System.out.print("  ");
         }
       }
     }
   }
 
-  public void drawPiece() {
-    Tetromino sPiece = new SPiece(4, 6);
-    sPiece.draw(this.gameState);
+  public void createNewPiece() throws InterruptedException {
+    this.currentPiece = generator.generate(5, 0);
+    this.currentPiece.draw(gameState);
+    this.drawState();
+  }
 
-    Tetromino zPiece = new ZPiece(6, 6);
-    zPiece.draw(this.gameState);
-
-    Tetromino tPiece = new TPiece(2, 10);
-    tPiece.draw(this.gameState);
-
-    Tetromino iPiece = new IPiece(5, 10);
-    iPiece.draw(this.gameState);
-
-    Tetromino jPiece = new JPiece(3, 14);
-    jPiece.draw(this.gameState);
-
-    Tetromino lPiece = new LPiece(7, 14);
-    lPiece.draw(this.gameState);
-
-    Tetromino oPiece = new OPiece(5, 18);
-    oPiece.draw(this.gameState);
-
-    drawState();
+  public void movePieceDown() {
+    this.currentPiece.erase(gameState);
+    this.currentPiece.moveDown();
+    this.currentPiece.draw(gameState);
+    this.drawState();
   }
 }

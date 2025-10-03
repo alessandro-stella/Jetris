@@ -2,7 +2,7 @@ package tetrominoes;
 
 public class TPiece extends Tetromino {
   public TPiece(int positionX, int positionY) {
-    super(Colors.fromPiece('T'), positionX, positionY);
+    super(PieceProps.fromPiece('T'), positionX, positionY);
   }
 
   @Override
@@ -18,7 +18,7 @@ public class TPiece extends Tetromino {
               {positionY, positionX},
               {positionY, positionX + 1},
               {positionY, positionX - 1},
-              {positionY + 1, positionX}
+              {positionY - 1, positionX}
             };
         break;
 
@@ -30,8 +30,8 @@ public class TPiece extends Tetromino {
             new int[][] {
               {positionY, positionX},
               {positionY, positionX + 1},
-              {positionY, positionX - 1},
-              {positionY - 1, positionX}
+              {positionY - 1, positionX},
+              {positionY + 1, positionX}
             };
         break;
 
@@ -41,10 +41,10 @@ public class TPiece extends Tetromino {
       case 2:
         this.piecesCoords =
             new int[][] {
-              {positionY - 1, positionX},
-              {positionY + 1, positionX},
+              {positionY, positionX},
+              {positionY, positionX + 1},
               {positionY, positionX - 1},
-              {positionY, positionX}
+              {positionY + 1, positionX}
             };
         break;
 
@@ -54,10 +54,10 @@ public class TPiece extends Tetromino {
       case 3:
         this.piecesCoords =
             new int[][] {
+              {positionY, positionX},
               {positionY - 1, positionX},
               {positionY + 1, positionX},
-              {positionY, positionX + 1},
-              {positionY, positionX}
+              {positionY, positionX - 1}
             };
         break;
 
