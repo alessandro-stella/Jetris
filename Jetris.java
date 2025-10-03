@@ -2,7 +2,7 @@ import org.jline.terminal.*;
 import util.*;
 
 public class Jetris {
-  static final int[] GRID_SIZE = {10, 20};
+  static final int[] GRID_SIZE = { 10, 20 };
   static final String PRINT_CHAR = "██";
 
   static int TERMINAL_WIDTH;
@@ -15,8 +15,7 @@ public class Jetris {
   }
 
   static void initTerminalSize() throws Exception {
-    Process p =
-        new ProcessBuilder("stty", "size").redirectInput(ProcessBuilder.Redirect.INHERIT).start();
+    Process p = new ProcessBuilder("stty", "size").redirectInput(ProcessBuilder.Redirect.INHERIT).start();
     try (var br = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()))) {
       String line = br.readLine();
       if (line != null) {
@@ -37,7 +36,8 @@ public class Jetris {
     int endY = FIELD_BR[1];
 
     UtilFunctions.moveCursorTo(startX, startY);
-    for (int i = 0; i < GRID_SIZE[0] + 2; i++) System.out.print(PRINT_CHAR);
+    for (int i = 0; i < GRID_SIZE[0] + 2; i++)
+      System.out.print(PRINT_CHAR);
 
     for (int i = startY + 1; i < endY; i++) {
       UtilFunctions.moveCursorTo(startX, i);
@@ -47,7 +47,8 @@ public class Jetris {
     }
 
     UtilFunctions.moveCursorTo(startX, endY);
-    for (int i = 0; i < GRID_SIZE[0] + 2; i++) System.out.print(PRINT_CHAR);
+    for (int i = 0; i < GRID_SIZE[0] + 2; i++)
+      System.out.print(PRINT_CHAR);
   }
 
   public static void main(String[] args) throws Exception {
@@ -69,19 +70,19 @@ public class Jetris {
     game.createNewPiece();
 
     new Thread(
-            () -> {
-              while (true) {
-                game.movePieceDown();
-                drawBorder();
+        () -> {
+          while (true) {
+            game.movePieceDown();
+            drawBorder();
 
-                try {
-                  Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                  Thread.currentThread().interrupt();
-                  break;
-                }
-              }
-            })
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              break;
+            }
+          }
+        })
         .start();
 
     long lastTime = 0;
@@ -123,9 +124,6 @@ public class Jetris {
                     break;
                 }
               }
-              break;
-
-            case 2:
               break;
 
             default:

@@ -18,24 +18,33 @@ public class Tetromino {
     calculatePiecesPosition(positionX, positionY, this.currentRotation);
   }
 
-  public void rotate() {
-    this.currentRotation = (this.currentRotation + 1) % 4;
-    calculatePiecesPosition(this.positionX, this.positionY, this.currentRotation);
+  public void rotate(char[][] gameState) {
+    int nextRotation = (this.currentRotation + 1) % 4;
+    int[][] backupCoords = new int[4][2];
+    for (int i = 0; i < 4; i++) {
+      backupCoords[i][0] = piecesCoords[i][0];
+      backupCoords[i][1] = piecesCoords[i][1];
+    }
 
+    calculatePiecesPosition(this.positionX, this.positionY, nextRotation);
+
+    boolean collision = false;
     for (int i = 0; i < 4; i++) {
       int row = piecesCoords[i][0];
       int col = piecesCoords[i][1];
 
-      if (col < 0) {
-        this.positionX += 1;
-        calculatePiecesPosition(this.positionX, this.positionY, this.currentRotation);
-        return;
+      if (row < 0 || row >= HEIGHT || col < 0 || col >= WIDTH || gameState[row][col] != '\u0000') {
+        collision = true;
+        break;
       }
+    }
 
-      if (col >= WIDTH) {
-        this.positionX -= 1;
-        calculatePiecesPosition(this.positionX, this.positionY, this.currentRotation);
-        return;
+    if (!collision) {
+      this.currentRotation = nextRotation;
+    } else {
+      for (int i = 0; i < 4; i++) {
+        piecesCoords[i][0] = backupCoords[i][0];
+        piecesCoords[i][1] = backupCoords[i][1];
       }
     }
   }
@@ -58,22 +67,22 @@ public class Tetromino {
     return true;
   }
 
-  public void moveRight() {
-    updatePosition(this.positionX + 1, this.positionY);
+  public void moveRight(char[][] gameState) {
+    updatePosition(this.positionX + 1, this.positionY, gameState);
   }
 
-  public void moveLeft() {
-    updatePosition(this.positionX - 1, this.positionY);
+  public void moveLeft(char[][] gameState) {
+    updatePosition(this.positionX - 1, this.positionY, gameState);
   }
 
-  public void updatePosition(int x, int y) {
+  public void updatePosition(int x, int y, char[][] gameState) {
     calculatePiecesPosition(x, y, currentRotation);
 
     for (int i = 0; i < 4; i++) {
       int row = piecesCoords[i][0];
       int col = piecesCoords[i][1];
 
-      if (col < 0 || col >= WIDTH) {
+      if (col < 0 || col >= WIDTH || row < 0 || row >= HEIGHT || gameState[row][col] != '\u0000') {
         calculatePiecesPosition(this.positionX, this.positionY, currentRotation);
         return;
       }
@@ -109,5 +118,6 @@ public class Tetromino {
     }
   }
 
-  public void calculatePiecesPosition(int positionX, int positionY, int currentRotation) {}
+  public void calculatePiecesPosition(int positionX, int positionY, int currentRotation) {
+  }
 }

@@ -58,7 +58,7 @@ public class GameHandler {
 
   public void rotatePiece() {
     this.currentPiece.erase(gameState);
-    this.currentPiece.rotate();
+    this.currentPiece.rotate(gameState);
     this.currentPiece.draw(gameState);
     this.drawState();
   }
@@ -69,33 +69,29 @@ public class GameHandler {
     boolean moved = this.currentPiece.moveDown(gameState);
 
     if (!moved) {
-      if (this.currentPiece.alreadyTouched) {
-        try {
-          this.createNewPiece();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      } else {
-        this.currentPiece.alreadyTouched = true;
+      this.currentPiece.draw(gameState);
+      try {
+        this.createNewPiece();
+      } catch (Exception e) {
+        e.printStackTrace();
       }
     } else {
-      this.currentPiece.alreadyTouched = false;
+      this.currentPiece.draw(gameState);
     }
 
-    this.currentPiece.draw(gameState);
     this.drawState();
   }
 
   public void movePieceRight() {
     this.currentPiece.erase(gameState);
-    this.currentPiece.moveRight();
+    this.currentPiece.moveRight(gameState);
     this.currentPiece.draw(gameState);
     this.drawState();
   }
 
   public void movePieceLeft() {
     this.currentPiece.erase(gameState);
-    this.currentPiece.moveLeft();
+    this.currentPiece.moveLeft(gameState);
     this.currentPiece.draw(gameState);
     this.drawState();
   }
