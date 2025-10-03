@@ -1,5 +1,4 @@
 import org.jline.terminal.*;
-import tetrominoes.PieceProps;
 import util.*;
 
 public class Jetris {
@@ -32,7 +31,7 @@ public class Jetris {
     }
   }
 
-  static void initField() {
+  static void drawBorder() {
     int startX = FIELD_TL[0] - 1;
     int startY = FIELD_TL[1] - 1;
     int endY = FIELD_BR[1];
@@ -63,11 +62,27 @@ public class Jetris {
     GameHandler game = new GameHandler(GRID_SIZE[0], GRID_SIZE[1], FIELD_TL[0], FIELD_TL[1]);
 
     clearScreen();
-    initField();
+    drawBorder();
     UtilFunctions.printLogo(FIELD_TL[0], FIELD_TL[1]);
     UtilFunctions.playTheme();
 
     game.createNewPiece();
+
+    new Thread(
+            () -> {
+              while (true) {
+                game.movePieceDown();
+                drawBorder();
+
+                try {
+                  Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                  break;
+                }
+              }
+            })
+        .start();
 
     long lastTime = 0;
     int lastKey = -1;
@@ -84,16 +99,36 @@ public class Jetris {
               UtilFunctions.endGame(terminal);
               break;
 
-            case 27:
-              UtilFunctions.endGame(terminal);
+            case 27: // ESC
+              int next1 = terminal.reader().read();
+              if (next1 == -1) {
+                UtilFunctions.endGame(terminal);
+              } else if (next1 == '[') {
+                int next2 = terminal.reader().read();
+                switch (next2) {
+                  case 'A': // Arrow up
+                    game.rotatePiece();
+                    break;
+
+                  case 'B': // Arrow down
+                    game.movePieceDown();
+                    break;
+
+                  case 'C': // Arrow right
+                    game.movePieceRight();
+                    break;
+
+                  case 'D': // Arrow left
+                    game.movePieceLeft();
+                    break;
+                }
+              }
               break;
 
-            case 'a':
-              game.movePieceDown();
+            case 2:
               break;
 
             default:
-              UtilFunctions.printColored(PieceProps.CYAN);
               break;
           }
 

@@ -56,9 +56,30 @@ public class GameHandler {
     this.drawState();
   }
 
+  public void rotatePiece() {
+    this.currentPiece.erase(gameState);
+    this.currentPiece.rotate();
+    this.currentPiece.draw(gameState);
+    this.drawState();
+  }
+
   public void movePieceDown() {
     this.currentPiece.erase(gameState);
     this.currentPiece.moveDown();
+    this.currentPiece.draw(gameState);
+    this.drawState();
+  }
+
+  public void movePieceRight() {
+    this.currentPiece.erase(gameState);
+    this.currentPiece.moveRight();
+    this.currentPiece.draw(gameState);
+    this.drawState();
+  }
+
+  public void movePieceLeft() {
+    this.currentPiece.erase(gameState);
+    this.currentPiece.moveLeft();
     this.currentPiece.draw(gameState);
     this.drawState();
   }

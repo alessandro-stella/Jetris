@@ -1,6 +1,8 @@
 package tetrominoes;
 
 public class Tetromino {
+  private final int HEIGHT = 20, WIDTH = 10;
+
   public PieceProps pieceType;
   public int positionX;
   public int positionY;
@@ -20,23 +22,55 @@ public class Tetromino {
   public void rotate() {
     this.currentRotation = (this.currentRotation + 1) % 4;
     calculatePiecesPosition(this.positionX, this.positionY, this.currentRotation);
+
+    for (int i = 0; i < 4; i++) {
+      int row = piecesCoords[i][0];
+      int col = piecesCoords[i][1];
+
+      if (col < 0) {
+        this.positionX += 1;
+        calculatePiecesPosition(this.positionX, this.positionY, this.currentRotation);
+        return;
+      }
+
+      if (col >= WIDTH) {
+        this.positionX -= 1;
+        calculatePiecesPosition(this.positionX, this.positionY, this.currentRotation);
+        return;
+      }
+    }
   }
 
   public void moveDown() {
     updatePosition(this.positionX, this.positionY + 1);
   }
 
+  public void moveRight() {
+    updatePosition(this.positionX + 1, this.positionY);
+  }
+
+  public void moveLeft() {
+    updatePosition(this.positionX - 1, this.positionY);
+  }
+
   public void updatePosition(int x, int y) {
+    calculatePiecesPosition(x, y, currentRotation);
+
+    for (int i = 0; i < 4; i++) {
+      int row = piecesCoords[i][0];
+      int col = piecesCoords[i][1];
+
+      if (col < 0 || col >= WIDTH) {
+        calculatePiecesPosition(this.positionX, this.positionY, currentRotation);
+        return;
+      }
+    }
+
     this.positionX = x;
     this.positionY = y;
-
-    calculatePiecesPosition(x, y, currentRotation);
   }
 
   public void draw(char[][] gameState) {
-    int HEIGHT = gameState.length;
-    int WIDTH = gameState[0].length;
-
     for (int i = 0; i < 4; i++) {
       int row = piecesCoords[i][0];
       int col = piecesCoords[i][1];
@@ -50,9 +84,6 @@ public class Tetromino {
   }
 
   public void erase(char[][] gameState) {
-    int HEIGHT = gameState.length;
-    int WIDTH = gameState[0].length;
-
     for (int i = 0; i < 4; i++) {
       int row = piecesCoords[i][0];
       int col = piecesCoords[i][1];

@@ -43,7 +43,7 @@ public class LPiece extends Tetromino {
             new int[][] {
               {positionY, positionX},
               {positionY, positionX + 1},
-              {positionY, positionX + 1},
+              {positionY, positionX - 1},
               {positionY + 1, positionX - 1}
             };
         break;
