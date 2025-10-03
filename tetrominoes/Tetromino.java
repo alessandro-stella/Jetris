@@ -6,15 +6,14 @@ public class Tetromino {
   public PieceProps pieceType;
   public int positionX;
   public int positionY;
-  public int currentRotation;
-  public int[][] piecesCoords;
+  public int currentRotation = 0;
+  public int[][] piecesCoords = new int[4][2];
+  public boolean alreadyTouched = false;
 
   public Tetromino(PieceProps pieceType, int positionX, int positionY) {
     this.pieceType = pieceType;
-    this.currentRotation = 0;
     this.positionX = positionX;
     this.positionY = positionY;
-    this.piecesCoords = new int[4][2];
 
     calculatePiecesPosition(positionX, positionY, this.currentRotation);
   }
@@ -41,8 +40,22 @@ public class Tetromino {
     }
   }
 
-  public void moveDown() {
-    updatePosition(this.positionX, this.positionY + 1);
+  public boolean moveDown(char[][] gameState) {
+    int newY = this.positionY + 1;
+    calculatePiecesPosition(this.positionX, newY, this.currentRotation);
+
+    for (int i = 0; i < 4; i++) {
+      int row = piecesCoords[i][0];
+      int col = piecesCoords[i][1];
+
+      if (row >= HEIGHT || gameState[row][col] != '\u0000') {
+        calculatePiecesPosition(this.positionX, this.positionY, this.currentRotation);
+        return false;
+      }
+    }
+
+    this.positionY = newY;
+    return true;
   }
 
   public void moveRight() {

@@ -65,7 +65,23 @@ public class GameHandler {
 
   public void movePieceDown() {
     this.currentPiece.erase(gameState);
-    this.currentPiece.moveDown();
+
+    boolean moved = this.currentPiece.moveDown(gameState);
+
+    if (!moved) {
+      if (this.currentPiece.alreadyTouched) {
+        try {
+          this.createNewPiece();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      } else {
+        this.currentPiece.alreadyTouched = true;
+      }
+    } else {
+      this.currentPiece.alreadyTouched = false;
+    }
+
     this.currentPiece.draw(gameState);
     this.drawState();
   }
