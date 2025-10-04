@@ -1,3 +1,5 @@
+import javax.sound.sampled.Clip;
+
 import org.jline.terminal.*;
 import util.*;
 
@@ -65,7 +67,8 @@ public class Jetris {
     clearScreen();
     drawBorder();
     UtilFunctions.printLogo(FIELD_TL[0], FIELD_TL[1]);
-    UtilFunctions.playTheme();
+    UtilFunctions.loadTheme();
+    UtilFunctions.playThemeLoop();
 
     game.createNewPiece();
 
