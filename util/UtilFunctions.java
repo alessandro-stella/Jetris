@@ -3,25 +3,23 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import javax.sound.sampled.*;
-import org.jline.terminal.*;
+import org.jline.terminal.Terminal;
 import tetrominoes.*;
 
 public class UtilFunctions {
+  private static int[] GRID_SIZE = new int[2];
+  private static int[] FIELD_TL = new int[2];
+  private static int[] FIELD_BR = new int[2];
 
-  // Color print
-  public static void printColored(PieceProps color) {
-    String ansi = String.format("\u001b[38;2;%d;%d;%dm", color.getR(), color.getG(), color.getB());
-    String reset = "\u001b[0m";
-    System.out.print(ansi + "██" + reset);
+  private static Clip soundtrack, lineClear, fourLineClear, blockPlaced;
+  private static float soundtrackVolume = 0.25f; // 0.0f - 1.0f
+
+  public static int[] getFieldTl() {
+    return FIELD_TL;
   }
 
-  // Cursor movement
-  public static void moveCursorTo(int x, int y) {
-    System.out.printf("\u001b[%d;%dH", y, x);
-  }
-
-  // Logo print
-  public static void printLogo(int x, int y) {
+  // Logo
+  public static void printLogo() {
     String[] logo = {
         "     ██╗███████╗████████╗██████╗ ██╗███████╗",
         "     ██║██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝",
@@ -30,11 +28,50 @@ public class UtilFunctions {
         "╚█████╔╝███████╗   ██║   ██║  ██║██║███████║",
         " ╚════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝",
     };
-
     for (int i = 0; i < logo.length; i++) {
-      moveCursorTo(x - 12, y - 8 + i);
+      TerminalUtils.moveCursorTo(FIELD_TL[0] - 12, FIELD_TL[1] - 8 + i);
       System.out.print(logo[i]);
     }
+  }
+
+  public static void clearScreen() {
+    System.out.print("\033[2J\033[H");
+  }
+
+  public static void setDimensions(int terminalWidth, int terminalHeight, int gridWidth, int gridHeight) {
+    GRID_SIZE[0] = gridWidth;
+    GRID_SIZE[1] = gridHeight;
+
+    FIELD_TL[0] = (terminalWidth - (GRID_SIZE[0] * 2)) / 2;
+    FIELD_TL[1] = (terminalHeight - GRID_SIZE[1] + 8) / 2;
+    FIELD_BR[0] = FIELD_TL[0] + (GRID_SIZE[0] * 2);
+    FIELD_BR[1] = FIELD_TL[1] + GRID_SIZE[1];
+  }
+
+  public static void drawBorder() {
+    int startX = FIELD_TL[0] - 1;
+    int startY = FIELD_TL[1] - 1;
+    int endY = FIELD_BR[1];
+    int width = GRID_SIZE[0] + 2;
+
+    StringBuilder horizontal = new StringBuilder();
+    for (int i = 0; i < width; i++)
+      horizontal.append("██");
+
+    TerminalUtils.moveCursorTo(startX, startY);
+    System.out.print(horizontal);
+
+    String verticalPadding = "██";
+    String middleSpace = " ".repeat((width - 2) * "██".length());
+    String middleRow = verticalPadding + middleSpace + verticalPadding;
+
+    for (int y = startY + 1; y < endY; y++) {
+      TerminalUtils.moveCursorTo(startX, y);
+      System.out.print(middleRow);
+    }
+
+    TerminalUtils.moveCursorTo(startX, endY);
+    System.out.print(horizontal);
   }
 
   // End game
@@ -46,40 +83,45 @@ public class UtilFunctions {
     System.exit(0);
   }
 
-  // Theme music
-  private static Clip soundtrack;
-  private static long clipTime = 0;
+  // Audio management
+  public static void loadAudio() {
+    soundtrack = loadClip("sounds/soundtrack.wav");
+    lineClear = loadClip("sounds/line-clear.wav");
+    fourLineClear = loadClip("sounds/four-line-clear.wav");
+    blockPlaced = loadClip("sounds/block-placed.wav");
 
-  public static void loadTheme() {
+    setClipVolume(soundtrack, soundtrackVolume);
+  }
+
+  private static Clip loadClip(String path) {
     try {
-      if (soundtrack == null) {
-        File file = new File("sounds/soundtrack.wav");
-        AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
-        soundtrack = AudioSystem.getClip();
-        soundtrack.open(audioStream);
-      }
+      File file = new File(path);
+      AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
+      Clip clip = AudioSystem.getClip();
+      clip.open(audioStream);
+      return clip;
     } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
       e.printStackTrace();
+      return null;
     }
+  }
+
+  private static void setClipVolume(Clip clip, float volume) {
+    if (clip == null)
+      return;
+    FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+    float dB = (float) (20.0 * Math.log10(volume <= 0.0 ? 0.0001 : volume));
+    gainControl.setValue(dB);
+  }
+
+  public static void setSoundtrackVolume(float volumePercent) {
+    soundtrackVolume = Math.min(Math.max(volumePercent, 0.0f), 1.0f);
+    setClipVolume(soundtrack, soundtrackVolume);
   }
 
   public static void playThemeLoop() {
     if (soundtrack != null) {
       soundtrack.setMicrosecondPosition(0);
-      soundtrack.loop(Clip.LOOP_CONTINUOUSLY);
-    }
-  }
-
-  public static void pauseTheme() {
-    if (soundtrack != null && soundtrack.isRunning()) {
-      clipTime = soundtrack.getMicrosecondPosition();
-      soundtrack.stop();
-    }
-  }
-
-  public static void resumeTheme() {
-    if (soundtrack != null) {
-      soundtrack.setMicrosecondPosition(clipTime);
       soundtrack.loop(Clip.LOOP_CONTINUOUSLY);
     }
   }
@@ -91,30 +133,20 @@ public class UtilFunctions {
     }
   }
 
-  // Line break sound
   public static void playLineBreak(int rows) {
-    String fileName = rows == 4 ? "four-line-clear" : "line-clear";
+    Clip clipToPlay = (rows == 4) ? fourLineClear : lineClear;
+    playClipOnce(clipToPlay);
+  }
 
-    pauseTheme();
+  public static void playBlockPlaced() {
+    playClipOnce(blockPlaced);
+  }
 
-    try {
-      File file = new File("sounds/" + fileName + ".wav");
-      AudioInputStream audioStream = AudioSystem.getAudioInputStream(file);
-
-      Clip clip = AudioSystem.getClip();
-      clip.open(audioStream);
-      clip.start();
-
-      clip.addLineListener(event -> {
-        if (event.getType() == LineEvent.Type.STOP) {
-          clip.close();
-          resumeTheme();
-        }
-      });
-
-    } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-      e.printStackTrace();
-      resumeTheme();
-    }
+  private static void playClipOnce(Clip clip) {
+    if (clip == null)
+      return;
+    clip.stop();
+    clip.setFramePosition(0);
+    clip.start();
   }
 }

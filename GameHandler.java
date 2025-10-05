@@ -1,9 +1,7 @@
 import javax.sound.sampled.*;
-import java.io.File;
-import java.io.IOException;
-
+import java.util.*;
 import tetrominoes.*;
-import util.UtilFunctions;
+import util.*;
 
 public class GameHandler {
   public int score;
@@ -21,21 +19,23 @@ public class GameHandler {
   private final TetrominoGenerator generator = new TetrominoGenerator();
   private boolean blockInput = false;
 
-  public GameHandler(int sizeX, int sizeY, int topLeftX, int topLeftY) {
+  public GameHandler(int sizeX, int sizeY) {
     this.score = 0;
     this.sizeX = sizeX;
     this.sizeY = sizeY;
 
-    this.topLeftX = topLeftX + 1;
-    this.topLeftY = topLeftY;
+    int[] tlCoords = UtilFunctions.getFieldTl();
+
+    this.topLeftX = tlCoords[0] + 1;
+    this.topLeftY = tlCoords[1];
     this.gameState = new char[sizeY][sizeX];
   }
 
   public void clearBoard() {
     for (int i = 0; i < sizeY; i++) {
-      UtilFunctions.moveCursorTo(topLeftX, topLeftY + i);
+      TerminalUtils.moveCursorTo(topLeftX, topLeftY + i);
       for (int j = 0; j < sizeX; j++) {
-        System.out.print("  ");
+        System.out.print(" ");
       }
     }
   }
@@ -45,17 +45,34 @@ public class GameHandler {
   }
 
   public void drawState() {
-    for (int i = 0; i < sizeY; i++) {
-      UtilFunctions.moveCursorTo(topLeftX, topLeftY + i);
+    UtilFunctions.clearScreen();
+    UtilFunctions.printLogo();
 
-      for (int j = 0; j < sizeX; j++) {
-        if (PieceProps.isValidPiece(gameState[i][j])) {
-          UtilFunctions.printColored(PieceProps.fromPiece(gameState[i][j]));
+    StringBuilder buffer = new StringBuilder();
+    int widthWithBorder = sizeX + 2;
+    int heightWithBorder = sizeY + 2;
+
+    for (int i = 0; i < heightWithBorder; i++) {
+      buffer.append("\033[").append(topLeftY - 1 + i).append(";").append(topLeftX - 2).append("H");
+      for (int j = 0; j < widthWithBorder; j++) {
+        if (i == 0 || i == heightWithBorder - 1) {
+          buffer.append("██");
+        } else if (j == 0 || j == widthWithBorder - 1) {
+          buffer.append("██");
         } else {
-          System.out.print("  ");
+          char c = gameState[i - 1][j - 1];
+          if (PieceProps.isValidPiece(c)) {
+            PieceProps p = PieceProps.fromPiece(c);
+            String ansi = String.format("\u001b[38;2;%d;%d;%dm", p.getR(), p.getG(), p.getB());
+            buffer.append(ansi).append("██").append("\u001b[0m");
+          } else {
+            buffer.append("  ");
+          }
         }
       }
     }
+
+    System.out.print(buffer);
   }
 
   public void createNewPiece() throws InterruptedException {
@@ -88,6 +105,9 @@ public class GameHandler {
       this.currentPiece.draw(gameState);
       try {
         this.checkRowsToDelete();
+
+        UtilFunctions.playBlockPlaced();
+
         this.createNewPiece();
       } catch (Exception e) {
         e.printStackTrace();
@@ -124,32 +144,25 @@ public class GameHandler {
 
     int[] rowIndexes = new int[sizeY];
     int rowsToDelete = 0;
-    boolean fullEmpty = false;
 
-    for (int i = (sizeY - 1); i >= 0; i--) {
-      boolean delete = true;
+    for (int i = sizeY - 1; i >= 0; i--) {
+      boolean full = true;
       boolean empty = true;
 
       for (int j = 0; j < sizeX; j++) {
         if (gameState[i][j] == '\u0000') {
-          delete = false;
-          break;
+          full = false;
         } else {
           empty = false;
         }
       }
 
-      if (delete) {
-        rowIndexes[rowsToDelete] = i;
-        rowsToDelete++;
+      if (full) {
+        rowIndexes[rowsToDelete++] = i;
       }
 
       if (empty) {
-        if (fullEmpty) {
-          break;
-        }
-
-        fullEmpty = true;
+        break;
       }
     }
 
@@ -159,7 +172,7 @@ public class GameHandler {
     }
 
     for (int i = 0; i < rowsToDelete; i++) {
-      this.deleteRow(rowIndexes[i]);
+      deleteRow(rowIndexes[i]);
     }
 
     UtilFunctions.playLineBreak(rowsToDelete);
@@ -167,34 +180,42 @@ public class GameHandler {
 
     try {
       Thread.sleep(500);
-    } catch (Exception e) {
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
 
-    this.removeEmptyRows(rowsToDelete, rowIndexes);
+    removeRows(rowIndexes, rowsToDelete);
     this.drawState();
 
     this.blockInput = false;
   }
 
-  public void deleteRow(int rowIndex) {
-    for (int i = 0; i < sizeX; i++) {
-      gameState[rowIndex][i] = '\u0000';
-    }
+  private void deleteRow(int rowIndex) {
+    Arrays.fill(gameState[rowIndex], '\u0000');
   }
 
-  public void removeEmptyRows(int rowsToDelete, int rowIndexes[]) {
-    for (int i = rowsToDelete - 1; i >= 0; i--) { // dal basso verso l'alto
-      int row = rowIndexes[i];
+  private void removeRows(int[] rowIndexes, int rowsToDelete) {
+    int targetRow = sizeY - 1;
 
-      // Sposta le righe sopra verso il basso
-      for (int j = row; j > 0; j--) {
-        System.arraycopy(gameState[j - 1], 0, gameState[j], 0, sizeX);
+    for (int i = sizeY - 1; i >= 0; i--) {
+      boolean toDelete = false;
+      for (int r = 0; r < rowsToDelete; r++) {
+        if (i == rowIndexes[r]) {
+          toDelete = true;
+          break;
+        }
       }
 
-      // Pulisci la prima riga
-      for (int k = 0; k < sizeX; k++) {
-        gameState[0][k] = '\u0000';
+      if (!toDelete) {
+        if (i != targetRow) {
+          System.arraycopy(gameState[i], 0, gameState[targetRow], 0, sizeX);
+        }
+        targetRow--;
       }
+    }
+
+    for (int i = targetRow; i >= 0; i--) {
+      Arrays.fill(gameState[i], '\u0000');
     }
   }
 
