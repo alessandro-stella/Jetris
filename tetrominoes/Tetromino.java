@@ -70,7 +70,7 @@ public class Tetromino {
     return true;
   }
 
-  public void draw(char[][] gameState) {
+  public boolean draw(char[][] gameState) {
     for (int i = 0; i < 4; i++) {
       int row = piecesCoords[i][0];
       int col = piecesCoords[i][1];
@@ -78,8 +78,14 @@ public class Tetromino {
       if (row < 0 || row >= HEIGHT || col < 0 || col >= WIDTH)
         continue;
 
+      if (gameState[row][col] != '\u0000') {
+        return false;
+      }
+
       gameState[row][col] = pieceType.getPiece();
     }
+
+    return true;
   }
 
   public void erase(char[][] gameState) {

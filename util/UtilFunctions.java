@@ -11,7 +11,7 @@ public class UtilFunctions {
   private static int[] FIELD_TL = new int[2];
   private static int[] FIELD_BR = new int[2];
 
-  private static Clip soundtrack, lineClear, fourLineClear, blockPlaced;
+  private static Clip soundtrack, lineClear, fourLineClear, blockPlaced, gameOver;
   private static float soundtrackVolume = 0.25f; // 0.0f - 1.0f
 
   public static int[] getFieldTl() {
@@ -74,8 +74,18 @@ public class UtilFunctions {
     System.out.print(horizontal);
   }
 
+  public static void printScore(int level, int score, int lines) {
+    TerminalUtils.moveCursorTo(0, 0);
+
+    System.out.print("Level: " + level + " - Score: " + score + " - Lines: " + lines);
+  }
+
   // End game
   public static void endGame(Terminal terminal) throws Exception {
+    playGameOver();
+
+    Thread.sleep(1500);
+
     System.out.print("\033[2J\033[H");
     System.out.print("\033[?25h");
     System.out.flush();
@@ -89,6 +99,7 @@ public class UtilFunctions {
     lineClear = loadClip("sounds/line-clear.wav");
     fourLineClear = loadClip("sounds/four-line-clear.wav");
     blockPlaced = loadClip("sounds/block-placed.wav");
+    gameOver = loadClip("sounds/game-over.wav");
 
     setClipVolume(soundtrack, soundtrackVolume);
   }
@@ -129,7 +140,6 @@ public class UtilFunctions {
   public static void stopTheme() {
     if (soundtrack != null) {
       soundtrack.stop();
-      soundtrack.setMicrosecondPosition(0);
     }
   }
 
@@ -140,6 +150,11 @@ public class UtilFunctions {
 
   public static void playBlockPlaced() {
     playClipOnce(blockPlaced);
+  }
+
+  public static void playGameOver() {
+    stopTheme();
+    playClipOnce(gameOver);
   }
 
   private static void playClipOnce(Clip clip) {

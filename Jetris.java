@@ -31,7 +31,7 @@ public class Jetris {
 
     initTerminalSize();
 
-    GameHandler game = new GameHandler(GRID_SIZE[0], GRID_SIZE[1]);
+    GameHandler game = new GameHandler(GRID_SIZE[0], GRID_SIZE[1], terminal);
 
     UtilFunctions.loadAudio();
     UtilFunctions.playThemeLoop();
@@ -44,7 +44,7 @@ public class Jetris {
             game.movePieceDown();
 
             try {
-              Thread.sleep(1000);
+              Thread.sleep(game.calculateFallingSpeed());
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
               break;

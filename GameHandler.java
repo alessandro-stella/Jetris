@@ -1,10 +1,13 @@
 import javax.sound.sampled.*;
+import org.jline.terminal.*;
 import java.util.*;
 import tetrominoes.*;
 import util.*;
 
 public class GameHandler {
   public int score;
+  public int level;
+  public int linesDeleted;
   public int sizeX;
   public int sizeY;
   public Clip soundtrack;
@@ -18,17 +21,33 @@ public class GameHandler {
 
   private final TetrominoGenerator generator = new TetrominoGenerator();
   private boolean blockInput = false;
+  private Terminal terminal;
 
-  public GameHandler(int sizeX, int sizeY) {
+  public GameHandler(int sizeX, int sizeY, Terminal terminal) {
     this.score = 0;
+    this.level = 1;
+    this.linesDeleted = 0;
     this.sizeX = sizeX;
     this.sizeY = sizeY;
+    this.terminal = terminal;
 
     int[] tlCoords = UtilFunctions.getFieldTl();
 
     this.topLeftX = tlCoords[0] + 1;
     this.topLeftY = tlCoords[1];
     this.gameState = new char[sizeY][sizeX];
+  }
+
+  public int calculateFallingSpeed() {
+    double G;
+    if (level < 20) {
+      G = 1.0 / (20 - level);
+    } else {
+      G = 1.0;
+    }
+
+    double delay = 20 / G;
+    return (int) Math.round(delay);
   }
 
   public void clearBoard() {
@@ -73,12 +92,22 @@ public class GameHandler {
     }
 
     System.out.print(buffer);
+    UtilFunctions.printScore(this.level, this.score, this.linesDeleted);
   }
 
   public void createNewPiece() throws InterruptedException {
     this.blockInput = true;
     this.currentPiece = generator.generate(5, 0);
-    this.currentPiece.draw(gameState);
+    boolean isValidPosition = this.currentPiece.draw(gameState);
+
+    if (!isValidPosition) {
+      try {
+        UtilFunctions.endGame(this.terminal);
+      } catch (Exception e) {
+
+      }
+    }
+
     this.drawState();
     this.blockInput = false;
   }
@@ -217,6 +246,18 @@ public class GameHandler {
     for (int i = targetRow; i >= 0; i--) {
       Arrays.fill(gameState[i], '\u0000');
     }
+
+    this.updateScore(rowsToDelete);
   }
 
+  public void updateScore(int rowsToDelete) {
+    this.linesDeleted += rowsToDelete;
+    this.level = Math.min(linesDeleted / 10 + 1, 20);
+
+    int mult = 200 * (rowsToDelete - 1) + 100 + (rowsToDelete == 4 ? 100 : 0);
+    this.score += mult * this.level;
+
+    TerminalUtils.moveCursorTo(0, 150);
+    System.out.print(this.score);
+  }
 }
