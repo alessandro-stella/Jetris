@@ -10,7 +10,7 @@ public class UtilFunctions {
   private static int[] FIELD_TL = new int[2];
   private static int[] FIELD_BR = new int[2];
 
-  private static Clip soundtrack, lineClear, fourLineClear, blockPlaced, gameOver;
+  private static Clip soundtrack, lineClear, fourLineClear, blockPlaced, levelUp, gameOver;
   private static float soundtrackVolume = 0.25f; // 0.0f - 1.0f
 
   public static int[] getFieldTl() {
@@ -98,6 +98,7 @@ public class UtilFunctions {
     lineClear = loadClip("sounds/line-clear.wav");
     fourLineClear = loadClip("sounds/four-line-clear.wav");
     blockPlaced = loadClip("sounds/block-placed.wav");
+    levelUp = loadClip("sounds/level-up.wav");
     gameOver = loadClip("sounds/game-over.wav");
 
     setClipVolume(soundtrack, soundtrackVolume);
@@ -149,6 +150,10 @@ public class UtilFunctions {
 
   public static void playBlockPlaced() {
     playClipOnce(blockPlaced);
+  }
+
+  public static void playLevelUp() {
+    playClipOnce(levelUp);
   }
 
   public static void playGameOver() {

@@ -155,6 +155,9 @@ public class GameHandler {
 
     if (!moved) {
       this.currentPiece.draw(gameState);
+
+      this.currentPiece = null;
+
       try {
         this.checkRowsToDelete();
         UtilFunctions.playBlockPlaced();
@@ -165,6 +168,7 @@ public class GameHandler {
     } else {
       this.currentPiece.draw(gameState);
     }
+
     this.drawState();
   }
 
@@ -188,6 +192,34 @@ public class GameHandler {
     this.drawState();
   }
 
+  public synchronized void moveOnBottom() {
+    if (blockInput)
+      return;
+
+    if (!this.currentPiece.couldMoveDown(gameState)) {
+      this.currentPiece.moveDown(gameState);
+      return;
+    }
+
+    int[][] ghostCoords = this.currentPiece.getGhostPosition(gameState);
+
+    this.currentPiece.erase(gameState);
+    this.currentPiece.moveDown(gameState, ghostCoords[0][0]);
+    this.currentPiece.draw(gameState);
+
+    this.currentPiece = null;
+
+    try {
+      this.checkRowsToDelete();
+      UtilFunctions.playBlockPlaced();
+      this.createNewPiece();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    this.drawState();
+  }
+
   public void checkRowsToDelete() {
     this.blockInput = true;
 
@@ -197,14 +229,17 @@ public class GameHandler {
     for (int i = sizeY - 1; i >= 0; i--) {
       boolean full = true;
       boolean empty = true;
+
       for (int j = 0; j < sizeX; j++) {
         if (gameState[i][j] == '\u0000')
           full = false;
         else
           empty = false;
       }
+
       if (full)
         rowIndexes[rowsToDelete++] = i;
+
       if (empty)
         break;
     }
@@ -216,6 +251,7 @@ public class GameHandler {
 
     for (int i = 0; i < rowsToDelete; i++)
       deleteRow(rowIndexes[i]);
+
     UtilFunctions.playLineBreak(rowsToDelete);
     this.drawState();
 
@@ -262,7 +298,12 @@ public class GameHandler {
 
   public void updateScore(int rowsToDelete) {
     this.linesDeleted += rowsToDelete;
-    this.level = Math.min(linesDeleted / 10 + 1, 20);
+    int newLevel = Math.min(linesDeleted / 10 + 1, 20);
+
+    if (newLevel != this.level) {
+      UtilFunctions.playLevelUp();
+      this.level = newLevel;
+    }
 
     int mult = 200 * (rowsToDelete - 1) + 100 + (rowsToDelete == 4 ? 100 : 0);
     this.score += mult * this.level;
