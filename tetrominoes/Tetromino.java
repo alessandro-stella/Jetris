@@ -1,5 +1,7 @@
 package tetrominoes;
 
+import java.util.Arrays;
+
 public class Tetromino {
   private final int HEIGHT = 20, WIDTH = 10;
 
@@ -26,7 +28,7 @@ public class Tetromino {
     }
 
     calculatePiecesPosition(positionX, positionY, nextRotation);
-    if (isValidPositionAllowTop(gameState)) {
+    if (isValidPosition(piecesCoords, gameState)) {
       currentRotation = nextRotation;
       return;
     }
@@ -34,7 +36,7 @@ public class Tetromino {
     int[] kicks = { -1, 1, -2, 2 };
     for (int dx : kicks) {
       calculatePiecesPosition(positionX + dx, positionY, nextRotation);
-      if (isValidPositionAllowTop(gameState)) {
+      if (isValidPosition(piecesCoords, gameState)) {
         positionX += dx;
         currentRotation = nextRotation;
         return;
@@ -61,10 +63,12 @@ public class Tetromino {
 
   private boolean updatePosition(int x, int y, char[][] gameState) {
     calculatePiecesPosition(x, y, currentRotation);
-    if (!isValidPositionAllowTop(gameState)) {
+
+    if (!isValidPosition(piecesCoords, gameState)) {
       calculatePiecesPosition(positionX, positionY, currentRotation);
       return false;
     }
+
     positionX = x;
     positionY = y;
     return true;
@@ -100,10 +104,10 @@ public class Tetromino {
     }
   }
 
-  private boolean isValidPositionAllowTop(char[][] gameState) {
-    for (int i = 0; i < 4; i++) {
-      int row = piecesCoords[i][0];
-      int col = piecesCoords[i][1];
+  private boolean isValidPosition(int[][] coordsToCheck, char[][] gameState) {
+    for (int i = 0; i < coordsToCheck.length; i++) {
+      int row = coordsToCheck[i][0];
+      int col = coordsToCheck[i][1];
 
       if (col < 0 || col >= WIDTH)
         return false;
@@ -115,7 +119,68 @@ public class Tetromino {
     return true;
   }
 
-  public void calculatePiecesPosition(int posX, int posY, int rotation) {
+  private boolean hasOverlap(int[][] coords1, int[][] coords2) {
+    for (int[] g : coords1) {
+      for (int[] p : coords2) {
+        if (Arrays.equals(g, p)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
+  public boolean couldMoveDown(char[][] gameState) {
+    for (int i = 0; i < piecesCoords.length; i++) {
+      int nextRow = piecesCoords[i][0] + 1;
+      int col = piecesCoords[i][1];
+
+      if (nextRow >= HEIGHT)
+        return false;
+
+      boolean isOwnCell = false;
+      for (int[] coord : piecesCoords) {
+        if (coord[0] == nextRow && coord[1] == col) {
+          isOwnCell = true;
+          break;
+        }
+      }
+      if (isOwnCell)
+        continue;
+
+      if (gameState[nextRow][col] != '\u0000')
+        return false;
+    }
+    return true;
+  }
+
+  public int[][] getGhostPosition(char[][] gameState) {
+    int[][] ghostCoords = new int[piecesCoords.length][piecesCoords[0].length];
+
+    for (int i = 0; i < piecesCoords.length; i++) {
+      System.arraycopy(piecesCoords[i], 0, ghostCoords[i], 0, piecesCoords[i].length);
+    }
+
+    while (hasOverlap(ghostCoords, piecesCoords)) {
+      for (int i = 0; i < ghostCoords.length; i++) {
+        ghostCoords[i][0] += 1;
+      }
+    }
+
+    while (isValidPosition(ghostCoords, gameState)) {
+      for (int i = 0; i < ghostCoords.length; i++) {
+        ghostCoords[i][0] += 1;
+      }
+    }
+
+    for (int i = 0; i < ghostCoords.length; i++) {
+      ghostCoords[i][0] -= 1;
+    }
+
+    return ghostCoords;
+  }
+
+  public void calculatePiecesPosition(int posX, int posY, int rotation) {
+    // Overridden
   }
 }

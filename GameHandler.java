@@ -32,7 +32,6 @@ public class GameHandler {
     this.terminal = terminal;
 
     int[] tlCoords = UtilFunctions.getFieldTl();
-
     this.topLeftX = tlCoords[0] + 1;
     this.topLeftY = tlCoords[1];
     this.gameState = new char[sizeY][sizeX];
@@ -45,7 +44,6 @@ public class GameHandler {
     } else {
       G = 1.0;
     }
-
     double delay = 20 / G;
     return (int) Math.round(delay);
   }
@@ -71,22 +69,49 @@ public class GameHandler {
     int widthWithBorder = sizeX + 2;
     int heightWithBorder = sizeY + 2;
 
+    boolean couldMoveDown = this.currentPiece != null && this.currentPiece.couldMoveDown(gameState);
+
+    int[][] ghostCoords = new int[0][0];
+    if (couldMoveDown && currentPiece != null) {
+      ghostCoords = currentPiece.getGhostPosition(gameState);
+    }
+
     for (int i = 0; i < heightWithBorder; i++) {
       buffer.append("\033[").append(topLeftY - 1 + i).append(";").append(topLeftX - 2).append("H");
       for (int j = 0; j < widthWithBorder; j++) {
+
         if (i == 0 || i == heightWithBorder - 1) {
           buffer.append("██");
-        } else if (j == 0 || j == widthWithBorder - 1) {
+          continue;
+        }
+
+        if (j == 0 || j == widthWithBorder - 1) {
           buffer.append("██");
+          continue;
+        }
+
+        int row = i - 1;
+        int col = j - 1;
+        char c = gameState[row][col];
+
+        boolean isRealPiece = currentPiece != null && Arrays.stream(currentPiece.piecesCoords)
+            .anyMatch(pc -> pc[0] == row && pc[1] == col);
+
+        boolean isGhost = !isRealPiece && ghostCoords.length > 0 &&
+            Arrays.stream(ghostCoords).anyMatch(gc -> gc[0] == row && gc[1] == col);
+
+        if (isRealPiece) {
+          PieceProps p = currentPiece.pieceType;
+          String ansi = String.format("\u001b[38;2;%d;%d;%dm", p.getR(), p.getG(), p.getB());
+          buffer.append(ansi).append("██").append("\u001b[0m");
+        } else if (isGhost) {
+          buffer.append("[]");
+        } else if (PieceProps.isValidPiece(c)) {
+          PieceProps p = PieceProps.fromPiece(c);
+          String ansi = String.format("\u001b[38;2;%d;%d;%dm", p.getR(), p.getG(), p.getB());
+          buffer.append(ansi).append("██").append("\u001b[0m");
         } else {
-          char c = gameState[i - 1][j - 1];
-          if (PieceProps.isValidPiece(c)) {
-            PieceProps p = PieceProps.fromPiece(c);
-            String ansi = String.format("\u001b[38;2;%d;%d;%dm", p.getR(), p.getG(), p.getB());
-            buffer.append(ansi).append("██").append("\u001b[0m");
-          } else {
-            buffer.append("  ");
-          }
+          buffer.append("  ");
         }
       }
     }
@@ -104,7 +129,6 @@ public class GameHandler {
       try {
         UtilFunctions.endGame(this.terminal);
       } catch (Exception e) {
-
       }
     }
 
@@ -122,21 +146,18 @@ public class GameHandler {
     this.drawState();
   }
 
-  public void movePieceDown() {
+  public synchronized void movePieceDown() {
     if (blockInput)
       return;
 
     this.currentPiece.erase(gameState);
-
     boolean moved = this.currentPiece.moveDown(gameState);
 
     if (!moved) {
       this.currentPiece.draw(gameState);
       try {
         this.checkRowsToDelete();
-
         UtilFunctions.playBlockPlaced();
-
         this.createNewPiece();
       } catch (Exception e) {
         e.printStackTrace();
@@ -144,11 +165,10 @@ public class GameHandler {
     } else {
       this.currentPiece.draw(gameState);
     }
-
     this.drawState();
   }
 
-  public void movePieceRight() {
+  public synchronized void movePieceRight() {
     if (blockInput)
       return;
 
@@ -158,7 +178,7 @@ public class GameHandler {
     this.drawState();
   }
 
-  public void movePieceLeft() {
+  public synchronized void movePieceLeft() {
     if (blockInput)
       return;
 
@@ -177,22 +197,16 @@ public class GameHandler {
     for (int i = sizeY - 1; i >= 0; i--) {
       boolean full = true;
       boolean empty = true;
-
       for (int j = 0; j < sizeX; j++) {
-        if (gameState[i][j] == '\u0000') {
+        if (gameState[i][j] == '\u0000')
           full = false;
-        } else {
+        else
           empty = false;
-        }
       }
-
-      if (full) {
+      if (full)
         rowIndexes[rowsToDelete++] = i;
-      }
-
-      if (empty) {
+      if (empty)
         break;
-      }
     }
 
     if (rowsToDelete == 0) {
@@ -200,10 +214,8 @@ public class GameHandler {
       return;
     }
 
-    for (int i = 0; i < rowsToDelete; i++) {
+    for (int i = 0; i < rowsToDelete; i++)
       deleteRow(rowIndexes[i]);
-    }
-
     UtilFunctions.playLineBreak(rowsToDelete);
     this.drawState();
 
@@ -215,7 +227,6 @@ public class GameHandler {
 
     removeRows(rowIndexes, rowsToDelete);
     this.drawState();
-
     this.blockInput = false;
   }
 
@@ -243,9 +254,8 @@ public class GameHandler {
       }
     }
 
-    for (int i = targetRow; i >= 0; i--) {
+    for (int i = targetRow; i >= 0; i--)
       Arrays.fill(gameState[i], '\u0000');
-    }
 
     this.updateScore(rowsToDelete);
   }

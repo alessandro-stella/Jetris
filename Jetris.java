@@ -1,5 +1,3 @@
-import javax.sound.sampled.Clip;
-
 import org.jline.terminal.*;
 import util.*;
 
@@ -92,6 +90,26 @@ public class Jetris {
                     break;
                 }
               }
+              break;
+
+            case 'r':
+              game.rotatePiece();
+              break;
+
+            case 'i':
+              game.rotatePiece();
+              break;
+
+            case 'k':
+              game.movePieceDown();
+              break;
+
+            case 'l':
+              game.movePieceRight();
+              break;
+
+            case 'j':
+              game.movePieceLeft();
               break;
 
             default:

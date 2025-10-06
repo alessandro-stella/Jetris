@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.sound.sampled.*;
 import org.jline.terminal.Terminal;
-import tetrominoes.*;
 
 public class UtilFunctions {
   private static int[] GRID_SIZE = new int[2];
