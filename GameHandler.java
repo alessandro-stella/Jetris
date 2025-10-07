@@ -80,13 +80,39 @@ public class GameHandler {
       buffer.append("\033[").append(topLeftY - 1 + i).append(";").append(topLeftX - 2).append("H");
       for (int j = 0; j < widthWithBorder; j++) {
 
-        if (i == 0 || i == heightWithBorder - 1) {
-          buffer.append("██");
+        boolean top = i == 0;
+        boolean bottom = i == heightWithBorder - 1;
+        boolean left = j == 0;
+        boolean right = j == widthWithBorder - 1;
+
+        // --- BORDI ---
+        if (top && left) {
+          buffer.append("┏");
           continue;
         }
+        if (top && right) {
+          buffer.append("┓");
+          continue;
+        }
+        if (bottom && left) {
+          buffer.append("┗");
+          continue;
+        }
+        if (bottom && right) {
+          buffer.append("┛");
+          continue;
+        }
+        if (top || bottom) {
+          buffer.append("━━");
+          continue;
+        }
+        if (left || right) {
+          if (left) {
 
-        if (j == 0 || j == widthWithBorder - 1) {
-          buffer.append("██");
+            buffer.append("┃");
+          } else {
+            buffer.append("┃");
+          }
           continue;
         }
 
@@ -118,21 +144,26 @@ public class GameHandler {
 
     System.out.print(buffer);
     UtilFunctions.printScore(this.level, this.score, this.linesDeleted, this.nextPiece.pieceType.getPiece());
-    printNextPiece(this.nextPiece, "Next piece", topLeftX + widthWithBorder * 2, topLeftY - 1);
+    printNextPiece(this.nextPiece, topLeftX + widthWithBorder * 2 - 3, topLeftY - 1);
   }
 
-  public void printNextPiece(Tetromino piece, String text, int x, int y) {
+  public void printNextPiece(Tetromino piece, int x, int y) {
     StringBuilder buffer;
-    TerminalUtils.moveCursorTo(x, y);
-    System.out.print(text);
 
     for (int i = 0; i < 6; i++) {
-      TerminalUtils.moveCursorTo(x, y + i + 1);
+      TerminalUtils.moveCursorTo(x, y + i);
       buffer = new StringBuilder();
 
       for (int j = 0; j < 8; j++) {
-        if (i == 0 || i == 5) {
-          buffer.append("██");
+        if (i == 5) {
+          buffer.append("┗━━━━━━━━━━━━━━┛");
+          j = 8;
+          continue;
+        }
+
+        if (i == 0) {
+          buffer.append("┏━━━━ Next ━━━━┓");
+          j = 8;
           continue;
         }
 
@@ -141,7 +172,7 @@ public class GameHandler {
             buffer.append("\u001b[0m");
           }
 
-          buffer.append("██");
+          buffer.append(j == 0 ? "┃ " : " ┃");
           continue;
         }
 

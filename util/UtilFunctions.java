@@ -49,9 +49,8 @@ public class UtilFunctions {
 
   public static void printScore(int level, int score, int lines, char nextPiece) {
     TerminalUtils.moveCursorTo(0, 0);
-    System.out.println("Level: " + level + " - Score: " + score + " - Lines: " + lines);
+    System.out.println("Level: " + level + " - Score: " + score);
 
-    System.out.print("Next piece: " + nextPiece);
   }
 
   // End game
