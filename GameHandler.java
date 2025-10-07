@@ -15,9 +15,8 @@ public class GameHandler {
   public int topLeftX;
   public int topLeftY;
   public char[][] gameState;
-  public char pieceInHold;
   public Tetromino currentPiece;
-  public char[] nextPieces;
+  public Tetromino nextPiece;
 
   private final TetrominoGenerator generator = new TetrominoGenerator();
   private boolean blockInput = false;
@@ -30,6 +29,7 @@ public class GameHandler {
     this.sizeX = sizeX;
     this.sizeY = sizeY;
     this.terminal = terminal;
+    this.nextPiece = generator.generate();
 
     int[] tlCoords = UtilFunctions.getFieldTl();
     this.topLeftX = tlCoords[0] + 1;
@@ -117,12 +117,130 @@ public class GameHandler {
     }
 
     System.out.print(buffer);
-    UtilFunctions.printScore(this.level, this.score, this.linesDeleted);
+    UtilFunctions.printScore(this.level, this.score, this.linesDeleted, this.nextPiece.pieceType.getPiece());
+    printNextPiece(this.nextPiece, "Next piece", topLeftX + widthWithBorder * 2, topLeftY - 1);
+  }
+
+  public void printNextPiece(Tetromino piece, String text, int x, int y) {
+    StringBuilder buffer;
+    TerminalUtils.moveCursorTo(x, y);
+    System.out.print(text);
+
+    for (int i = 0; i < 6; i++) {
+      TerminalUtils.moveCursorTo(x, y + i + 1);
+      buffer = new StringBuilder();
+
+      for (int j = 0; j < 8; j++) {
+        if (i == 0 || i == 5) {
+          buffer.append("██");
+          continue;
+        }
+
+        if (j == 0 || j == 7) {
+          if (j == 7) {
+            buffer.append("\u001b[0m");
+          }
+
+          buffer.append("██");
+          continue;
+        }
+
+        if (i == 1 || i == 4) {
+          buffer.append("  ");
+          continue;
+        }
+
+        if (j == 1 || j == 6) {
+          buffer.append("  ");
+          continue;
+        }
+
+        if (piece == null) {
+          buffer.append("  ");
+          continue;
+        }
+
+        String ansi = String.format("\u001b[38;2;%d;%d;%dm", piece.pieceType.getR(),
+            piece.pieceType.getG(), piece.pieceType.getB());
+        buffer.append(ansi);
+        char pieceType = piece.pieceType.getPiece();
+
+        switch (pieceType) {
+          case 'I':
+            if (i == 3) {
+              buffer.append("██");
+            } else {
+              buffer.append("  ");
+            }
+            break;
+
+          case 'O':
+            if (j != 2 && j != 5) {
+              buffer.append("██");
+            } else {
+              buffer.append("  ");
+            }
+            break;
+
+          case 'J':
+            if (i == 2) {
+              buffer.append(" ██     ");
+            } else {
+              buffer.append(" ██████ ");
+            }
+            break;
+
+          case 'L':
+            if (i == 2) {
+              buffer.append("     ██ ");
+            } else {
+              buffer.append(" ██████ ");
+            }
+            break;
+
+          case 'S':
+            if (i == 2) {
+              buffer.append("   ████ ");
+            } else {
+              buffer.append(" ████   ");
+            }
+            break;
+
+          case 'T':
+            if (i == 2) {
+              buffer.append("   ██   ");
+            } else {
+              buffer.append(" ██████ ");
+            }
+            break;
+
+          case 'Z':
+            if (i == 2) {
+              buffer.append(" ████   ");
+            } else {
+              buffer.append("   ████ ");
+            }
+            break;
+
+          default:
+            break;
+        }
+
+        if (pieceType != 'I' && pieceType != 'O') {
+          j = 5;
+        }
+
+      }
+
+      System.out.print(buffer);
+    }
   }
 
   public void createNewPiece() throws InterruptedException {
     this.blockInput = true;
-    this.currentPiece = generator.generate(5, 0);
+    this.currentPiece = this.nextPiece;
+    this.nextPiece = generator.generate();
+
     boolean isValidPosition = this.currentPiece.draw(gameState);
 
     if (!isValidPosition) {

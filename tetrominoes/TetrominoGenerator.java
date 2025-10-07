@@ -4,7 +4,7 @@ import java.util.*;
 
 public class TetrominoGenerator {
 
-  private final Character[] bagTemplate = {'I', 'J', 'L', 'O', 'S', 'T', 'Z'};
+  private final Character[] bagTemplate = { 'I', 'J', 'L', 'O', 'S', 'T', 'Z' };
 
   public List<Character> bag;
   private Random randomizer = new Random();
@@ -13,7 +13,9 @@ public class TetrominoGenerator {
     bag = new ArrayList<Character>(Arrays.asList(bagTemplate));
   }
 
-  public Tetromino generate(int x, int y) {
+  public Tetromino generate() {
+    int x = 5, y = 0;
+
     if (bag.size() == 0) {
       bag = new ArrayList<Character>(Arrays.asList(bagTemplate));
     }

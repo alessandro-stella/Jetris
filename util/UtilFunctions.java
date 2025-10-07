@@ -47,36 +47,11 @@ public class UtilFunctions {
     FIELD_BR[1] = FIELD_TL[1] + GRID_SIZE[1];
   }
 
-  public static void drawBorder() {
-    int startX = FIELD_TL[0] - 1;
-    int startY = FIELD_TL[1] - 1;
-    int endY = FIELD_BR[1];
-    int width = GRID_SIZE[0] + 2;
-
-    StringBuilder horizontal = new StringBuilder();
-    for (int i = 0; i < width; i++)
-      horizontal.append("██");
-
-    TerminalUtils.moveCursorTo(startX, startY);
-    System.out.print(horizontal);
-
-    String verticalPadding = "██";
-    String middleSpace = " ".repeat((width - 2) * "██".length());
-    String middleRow = verticalPadding + middleSpace + verticalPadding;
-
-    for (int y = startY + 1; y < endY; y++) {
-      TerminalUtils.moveCursorTo(startX, y);
-      System.out.print(middleRow);
-    }
-
-    TerminalUtils.moveCursorTo(startX, endY);
-    System.out.print(horizontal);
-  }
-
-  public static void printScore(int level, int score, int lines) {
+  public static void printScore(int level, int score, int lines, char nextPiece) {
     TerminalUtils.moveCursorTo(0, 0);
+    System.out.println("Level: " + level + " - Score: " + score + " - Lines: " + lines);
 
-    System.out.print("Level: " + level + " - Score: " + score + " - Lines: " + lines);
+    System.out.print("Next piece: " + nextPiece);
   }
 
   // End game
