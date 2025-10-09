@@ -47,12 +47,6 @@ public class UtilFunctions {
     FIELD_BR[1] = FIELD_TL[1] + GRID_SIZE[1];
   }
 
-  public static void printScore(int level, int score, int lines, char nextPiece) {
-    TerminalUtils.moveCursorTo(0, 0);
-    System.out.println("Level: " + level + " - Score: " + score);
-
-  }
-
   // End game
   public static void endGame(Terminal terminal) throws Exception {
     playGameOver();

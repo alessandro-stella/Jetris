@@ -24,7 +24,7 @@ public class GameHandler {
 
   public GameHandler(int sizeX, int sizeY, Terminal terminal) {
     this.score = 0;
-    this.level = 1;
+    this.level = 10;
     this.linesDeleted = 0;
     this.sizeX = sizeX;
     this.sizeY = sizeY;
@@ -143,7 +143,7 @@ public class GameHandler {
     }
 
     System.out.print(buffer);
-    UtilFunctions.printScore(this.level, this.score, this.linesDeleted, this.nextPiece.pieceType.getPiece());
+    printGameStats(topLeftX, topLeftY - 1);
     printNextPiece(this.nextPiece, topLeftX + widthWithBorder * 2 - 3, topLeftY - 1);
   }
 
@@ -265,6 +265,66 @@ public class GameHandler {
 
       System.out.print(buffer);
     }
+  }
+
+  public void printGameStats(int x, int y) {
+    int width = 17;
+    printBlock(x - width - 3, y, "Score", width, this.score);
+    printBlock(x - width - 3, y + 4, "Level", width, this.level);
+    printBlock(x - width - 3, y + 8, "Lines", width, this.linesDeleted);
+  }
+
+  public void printBlock(int x, int y, String text, int totalWidth, int value) {
+    // Top
+    StringBuilder buffer = new StringBuilder();
+    String horLine = "━", vertLine = "┃";
+    int fillerChars = (totalWidth - 4 - text.length()) / 2;
+
+    buffer.append("┏");
+
+    for (int i = 0; i < fillerChars; i++) {
+      buffer.append(horLine);
+    }
+
+    buffer.append(" " + text + " ");
+
+    for (int i = 0; i < fillerChars; i++) {
+      buffer.append(horLine);
+    }
+
+    buffer.append("┓");
+
+    TerminalUtils.moveCursorTo(x, y);
+    System.out.print(buffer);
+
+    // Middle
+    buffer = new StringBuilder();
+    buffer.append(vertLine);
+
+    int valueLength = String.valueOf(value).length();
+
+    for (int i = 0; i < totalWidth - 2 - valueLength; i++) {
+      buffer.append(" ");
+    }
+
+    buffer.append(value);
+    buffer.append(vertLine);
+
+    TerminalUtils.moveCursorTo(x, y + 1);
+    System.out.print(buffer);
+
+    // Bottom
+    buffer = new StringBuilder();
+    buffer.append("┗");
+
+    for (int i = 0; i < totalWidth - 2; i++) {
+      buffer.append(horLine);
+    }
+
+    buffer.append("┛");
+
+    TerminalUtils.moveCursorTo(x, y + 2);
+    System.out.print(buffer);
   }
 
   public void createNewPiece() throws InterruptedException {
