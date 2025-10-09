@@ -13,23 +13,48 @@ public class UtilFunctions {
   private static Clip soundtrack, lineClear, fourLineClear, blockPlaced, levelUp, gameOver;
   private static float soundtrackVolume = 0.25f; // 0.0f - 1.0f
 
+  final static String[] logo = {
+      "     ██╗███████╗████████╗██████╗ ██╗███████╗",
+      "     ██║██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝",
+      "     ██║█████╗     ██║   ██████╔╝██║███████╗",
+      "██   ██║██╔══╝     ██║   ██╔══██╗██║╚════██║",
+      "╚█████╔╝███████╗   ██║   ██║  ██║██║███████║",
+      " ╚════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝",
+  };
+
+  final static String[] controls = {
+      "┏━━ Controls ━━┓",
+      "┃              ┃",
+      "┃ J/←: Left    ┃",
+      "┃              ┃",
+      "┃ L/→: Right   ┃",
+      "┃              ┃",
+      "┃ K/↓: Down    ┃",
+      "┃              ┃",
+      "┃ I/↑: Rotate  ┃",
+      "┃              ┃",
+      "┃ Space: Place ┃",
+      "┃              ┃",
+      "┗━━━━━━━━━━━━━━┛"
+  };
+
   public static int[] getFieldTl() {
     return FIELD_TL;
   }
 
   // Logo
   public static void printLogo() {
-    String[] logo = {
-        "     ██╗███████╗████████╗██████╗ ██╗███████╗",
-        "     ██║██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝",
-        "     ██║█████╗     ██║   ██████╔╝██║███████╗",
-        "██   ██║██╔══╝     ██║   ██╔══██╗██║╚════██║",
-        "╚█████╔╝███████╗   ██║   ██║  ██║██║███████║",
-        " ╚════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝",
-    };
     for (int i = 0; i < logo.length; i++) {
       TerminalUtils.moveCursorTo(FIELD_TL[0] - 12, FIELD_TL[1] - 8 + i);
       System.out.print(logo[i]);
+    }
+  }
+
+  // Controls
+  public static void printControls() {
+    for (int i = 0; i < controls.length; i++) {
+      TerminalUtils.moveCursorTo(FIELD_BR[0] + 2, FIELD_TL[1] + 6 + i);
+      System.out.print(controls[i]);
     }
   }
 
@@ -47,8 +72,8 @@ public class UtilFunctions {
     FIELD_BR[1] = FIELD_TL[1] + GRID_SIZE[1];
   }
 
-  // End game
-  public static void endGame(Terminal terminal) throws Exception {
+  // Game over
+  public static void gameRecap(Terminal terminal, int score, int level, int lines) throws Exception {
     playGameOver();
 
     Thread.sleep(1500);
@@ -56,6 +81,33 @@ public class UtilFunctions {
     System.out.print("\033[2J\033[H");
     System.out.print("\033[?25h");
     System.out.flush();
+
+    long lastTime = 0;
+    int lastKey = -1;
+    long delay = 100;
+
+    while (true) {
+      int ch = terminal.reader().read();
+      long now = System.currentTimeMillis();
+
+      if (ch != -1) {
+        if (ch != lastKey || (now - lastTime) >= delay) {
+          switch (ch) {
+            case 'r':
+              System.out.print("PLAY AGAIN!");
+              System.out.flush();
+              break;
+
+            default:
+              closeGame(terminal);
+              break;
+          }
+        }
+      }
+    }
+  }
+
+  public static void closeGame(Terminal terminal) throws Exception {
     terminal.close();
     System.exit(0);
   }

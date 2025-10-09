@@ -63,13 +63,13 @@ public class Jetris {
         if (ch != lastKey || (now - lastTime) >= delay) {
           switch (ch) {
             case 'q':
-              UtilFunctions.endGame(terminal);
+              UtilFunctions.gameRecap(terminal, game.score, game.level, game.linesDeleted);
               break;
 
             case 27: // ESC
               int next1 = terminal.reader().read();
               if (next1 == -1) {
-                UtilFunctions.endGame(terminal);
+                UtilFunctions.gameRecap(terminal, game.score, game.level, game.linesDeleted);
               } else if (next1 == '[') {
                 int next2 = terminal.reader().read();
                 switch (next2) {
@@ -92,10 +92,6 @@ public class Jetris {
               }
               break;
 
-            case 'r':
-              game.rotatePiece();
-              break;
-
             case 'i':
               game.rotatePiece();
               break;
@@ -112,7 +108,7 @@ public class Jetris {
               game.movePieceLeft();
               break;
 
-            case 32: // Spacebar
+            case 32: // Space
               game.moveOnBottom();
               break;
 

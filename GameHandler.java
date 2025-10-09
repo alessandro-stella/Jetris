@@ -64,6 +64,7 @@ public class GameHandler {
   public void drawState() {
     UtilFunctions.clearScreen();
     UtilFunctions.printLogo();
+    UtilFunctions.printControls();
 
     StringBuilder buffer = new StringBuilder();
     int widthWithBorder = sizeX + 2;
@@ -336,7 +337,7 @@ public class GameHandler {
 
     if (!isValidPosition) {
       try {
-        UtilFunctions.endGame(this.terminal);
+        UtilFunctions.gameRecap(this.terminal, score, level, linesDeleted);
       } catch (Exception e) {
       }
     }
