@@ -24,7 +24,7 @@ public class GameHandler {
 
   public GameHandler(int sizeX, int sizeY, Terminal terminal) {
     this.score = 0;
-    this.level = 10;
+    this.level = 1;
     this.linesDeleted = 0;
     this.sizeX = sizeX;
     this.sizeY = sizeY;
@@ -63,7 +63,7 @@ public class GameHandler {
 
   public void drawState() {
     UtilFunctions.clearScreen();
-    UtilFunctions.printLogo();
+    UtilFunctions.printLogo(UtilFunctions.jetrisLogo, 8);
     UtilFunctions.printControls();
 
     StringBuilder buffer = new StringBuilder();

@@ -4,8 +4,6 @@ import util.*;
 public class Jetris {
   static final int[] GRID_SIZE = { 10, 20 };
 
-  static int TERMINAL_WIDTH;
-  static int TERMINAL_HEIGHT;
   static int[] FIELD_TL = new int[2];
   static int[] FIELD_BR = new int[2];
 
