@@ -10,6 +10,8 @@ public class UtilFunctions {
   private static int[] GRID_SIZE = new int[2];
   private static int[] FIELD_TL = new int[2];
   private static int[] FIELD_BR = new int[2];
+  public static boolean restartRequested = false;
+  public static boolean stopGame = false;
 
   private static Clip soundtrack, lineClear, fourLineClear, blockPlaced, levelUp, gameOver;
   private static float soundtrackVolume = 0.25f; // 0.0f - 1.0f
@@ -37,6 +39,8 @@ public class UtilFunctions {
       "┃ I/↑: Rotate  ┃",
       "┃              ┃",
       "┃ Space: Place ┃",
+      "┃              ┃",
+      "┃ Q: Quit Game ┃",
       "┃              ┃",
       "┗━━━━━━━━━━━━━━┛"
   };
@@ -205,10 +209,11 @@ public class UtilFunctions {
           switch (ch) {
             case 'r':
             case 'R':
-              System.out.print("CIOLA");
+              restartRequested = true;
               return;
 
             default:
+              restartRequested = false;
               closeGame(terminal);
               return;
           }
@@ -222,6 +227,10 @@ public class UtilFunctions {
   private static String padRight(String text, int width) {
     int pad = Math.max(0, width - text.length());
     return text + " ".repeat(pad);
+  }
+
+  public static boolean shouldRestart() {
+    return restartRequested;
   }
 
   public static void closeGame(Terminal terminal) throws Exception {

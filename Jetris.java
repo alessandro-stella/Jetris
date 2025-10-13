@@ -2,6 +2,7 @@ import org.jline.terminal.*;
 import util.*;
 
 public class Jetris {
+
   static final int[] GRID_SIZE = { 10, 20 };
 
   static int[] FIELD_TL = new int[2];
@@ -13,63 +14,70 @@ public class Jetris {
       String line = br.readLine();
       if (line != null) {
         String[] parts = line.trim().split("\\s+");
+
         UtilFunctions.setDimensions(Integer.parseInt(parts[1]), Integer.parseInt(parts[0]), GRID_SIZE[0], GRID_SIZE[1]);
       }
     }
   }
 
-  public static void main(String[] args) throws Exception {
-    Terminal terminal = TerminalBuilder.builder().jna(true).system(true).build();
-
-    terminal.enterRawMode();
-    terminal.writer().print("\033[?25l");
-    terminal.flush();
-
-    initTerminalSize();
-
-    GameHandler game = new GameHandler(GRID_SIZE[0], GRID_SIZE[1], terminal);
+  public static void runGame(Terminal terminal, GameHandler game) throws Exception {
+    UtilFunctions.stopGame = false;
 
     UtilFunctions.loadAudio();
     UtilFunctions.playThemeLoop();
-
     game.createNewPiece();
 
-    new Thread(
-        () -> {
-          while (true) {
-            game.movePieceDown();
+    Thread gravityThread = new Thread(() -> {
+      while (!Thread.currentThread().isInterrupted()) {
+        if (UtilFunctions.stopGame) {
+          Thread.currentThread().interrupt();
+          break;
+        }
 
-            try {
-              Thread.sleep(game.calculateFallingSpeed());
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              break;
-            }
-          }
-        })
-        .start();
+        try {
+          Thread.sleep(game.calculateFallingSpeed());
+          game.movePieceDown();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break;
+        }
+      }
+
+    });
+    gravityThread.start();
 
     long lastTime = 0;
     int lastKey = -1;
     long delay = 100;
 
     while (true) {
-      int ch = terminal.reader().read();
+      if (UtilFunctions.stopGame) {
+        gravityThread.interrupt();
+        return;
+      }
+
+      int ch = terminal.reader().read(100);
       long now = System.currentTimeMillis();
 
       if (ch != -1) {
         if (ch != lastKey || (now - lastTime) >= delay) {
+
           switch (ch) {
             case 'q':
-              UtilFunctions.gameRecap(terminal, game.score, game.level, game.linesDeleted);
-              break;
+              gravityThread.interrupt();
+              UtilFunctions.stopGame = true;
+              return;
 
             case 27: // ESC
               int next1 = terminal.reader().read();
+
               if (next1 == -1) {
-                UtilFunctions.gameRecap(terminal, game.score, game.level, game.linesDeleted);
+                gravityThread.interrupt();
+                UtilFunctions.stopGame = true;
+                return;
               } else if (next1 == '[') {
                 int next2 = terminal.reader().read();
+
                 switch (next2) {
                   case 'A': // Arrow up
                     game.rotatePiece();
@@ -118,7 +126,32 @@ public class Jetris {
           lastTime = now;
         }
       }
+
       Thread.sleep(10);
+    }
+  }
+
+  public static void main(String[] args) throws Exception {
+    Terminal terminal = TerminalBuilder.builder().jna(true).system(true).build();
+
+    terminal.enterRawMode();
+    TerminalUtils.hideCursor();
+    terminal.flush();
+
+    initTerminalSize();
+
+    while (true) {
+      GameHandler game = new GameHandler(GRID_SIZE[0], GRID_SIZE[1]);
+
+      runGame(terminal, game);
+
+      if (UtilFunctions.stopGame) {
+        UtilFunctions.gameRecap(terminal, game.score, game.level, game.linesDeleted);
+      }
+
+      if (!UtilFunctions.shouldRestart()) {
+        UtilFunctions.closeGame(terminal);
+      }
     }
   }
 }

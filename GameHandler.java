@@ -1,5 +1,4 @@
 import javax.sound.sampled.*;
-import org.jline.terminal.*;
 import java.util.*;
 import tetrominoes.*;
 import util.*;
@@ -20,15 +19,13 @@ public class GameHandler {
 
   private final TetrominoGenerator generator = new TetrominoGenerator();
   private boolean blockInput = false;
-  private Terminal terminal;
 
-  public GameHandler(int sizeX, int sizeY, Terminal terminal) {
+  public GameHandler(int sizeX, int sizeY) {
     this.score = 0;
     this.level = 1;
     this.linesDeleted = 0;
     this.sizeX = sizeX;
     this.sizeY = sizeY;
-    this.terminal = terminal;
     this.nextPiece = generator.generate();
 
     int[] tlCoords = UtilFunctions.getFieldTl();
@@ -51,9 +48,9 @@ public class GameHandler {
   public void clearBoard() {
     for (int i = 0; i < sizeY; i++) {
       TerminalUtils.moveCursorTo(topLeftX, topLeftY + i);
-      for (int j = 0; j < sizeX; j++) {
+
+      for (int j = 0; j < sizeX; j++)
         System.out.print(" ");
-      }
     }
   }
 
@@ -71,59 +68,53 @@ public class GameHandler {
     int heightWithBorder = sizeY + 2;
 
     boolean couldMoveDown = this.currentPiece != null && this.currentPiece.couldMoveDown(gameState);
-
     int[][] ghostCoords = new int[0][0];
-    if (couldMoveDown && currentPiece != null) {
+
+    if (couldMoveDown && currentPiece != null)
       ghostCoords = currentPiece.getGhostPosition(gameState);
-    }
 
     for (int i = 0; i < heightWithBorder; i++) {
       buffer.append("\033[").append(topLeftY - 1 + i).append(";").append(topLeftX - 2).append("H");
+
       for (int j = 0; j < widthWithBorder; j++) {
+        boolean top = i == 0, bottom = i == heightWithBorder - 1;
+        boolean left = j == 0, right = j == widthWithBorder - 1;
 
-        boolean top = i == 0;
-        boolean bottom = i == heightWithBorder - 1;
-        boolean left = j == 0;
-        boolean right = j == widthWithBorder - 1;
-
-        // --- BORDI ---
         if (top && left) {
           buffer.append("┏");
           continue;
         }
+
         if (top && right) {
           buffer.append("┓");
           continue;
         }
+
         if (bottom && left) {
           buffer.append("┗");
           continue;
         }
+
         if (bottom && right) {
           buffer.append("┛");
           continue;
         }
+
         if (top || bottom) {
           buffer.append("━━");
           continue;
         }
-        if (left || right) {
-          if (left) {
 
-            buffer.append("┃");
-          } else {
-            buffer.append("┃");
-          }
+        if (left || right) {
+          buffer.append("┃");
           continue;
         }
 
-        int row = i - 1;
-        int col = j - 1;
+        int row = i - 1, col = j - 1;
         char c = gameState[row][col];
 
-        boolean isRealPiece = currentPiece != null && Arrays.stream(currentPiece.piecesCoords)
-            .anyMatch(pc -> pc[0] == row && pc[1] == col);
-
+        boolean isRealPiece = currentPiece != null &&
+            Arrays.stream(currentPiece.piecesCoords).anyMatch(pc -> pc[0] == row && pc[1] == col);
         boolean isGhost = !isRealPiece && ghostCoords.length > 0 &&
             Arrays.stream(ghostCoords).anyMatch(gc -> gc[0] == row && gc[1] == col);
 
@@ -131,15 +122,14 @@ public class GameHandler {
           PieceProps p = currentPiece.pieceType;
           String ansi = String.format("\u001b[38;2;%d;%d;%dm", p.getR(), p.getG(), p.getB());
           buffer.append(ansi).append("██").append("\u001b[0m");
-        } else if (isGhost) {
+        } else if (isGhost)
           buffer.append("[]");
-        } else if (PieceProps.isValidPiece(c)) {
+        else if (PieceProps.isValidPiece(c)) {
           PieceProps p = PieceProps.fromPiece(c);
           String ansi = String.format("\u001b[38;2;%d;%d;%dm", p.getR(), p.getG(), p.getB());
           buffer.append(ansi).append("██").append("\u001b[0m");
-        } else {
+        } else
           buffer.append("  ");
-        }
       }
     }
 
@@ -169,101 +159,50 @@ public class GameHandler {
         }
 
         if (j == 0 || j == 7) {
-          if (j == 7) {
+          if (j == 7)
             buffer.append("\u001b[0m");
-          }
 
           buffer.append(j == 0 ? "┃ " : " ┃");
           continue;
         }
 
-        if (i == 1 || i == 4) {
+        if (i == 1 || i == 4 || j == 1 || j == 6 || piece == null) {
           buffer.append("  ");
           continue;
         }
 
-        if (j == 1 || j == 6) {
-          buffer.append("  ");
-          continue;
-        }
-
-        if (piece == null) {
-          buffer.append("  ");
-          continue;
-        }
-
-        String ansi = String.format("\u001b[38;2;%d;%d;%dm", piece.pieceType.getR(),
-            piece.pieceType.getG(), piece.pieceType.getB());
+        String ansi = String.format("\u001b[38;2;%d;%d;%dm", piece.pieceType.getR(), piece.pieceType.getG(),
+            piece.pieceType.getB());
         buffer.append(ansi);
+
         char pieceType = piece.pieceType.getPiece();
 
         switch (pieceType) {
           case 'I':
-            if (i == 3) {
-              buffer.append("██");
-            } else {
-              buffer.append("  ");
-            }
+            buffer.append(i == 3 ? "██" : "  ");
             break;
-
           case 'O':
-            if (j != 2 && j != 5) {
-              buffer.append("██");
-            } else {
-              buffer.append("  ");
-            }
+            buffer.append(j != 2 && j != 5 ? "██" : "  ");
             break;
-
           case 'J':
-            if (i == 2) {
-              buffer.append(" ██     ");
-            } else {
-              buffer.append(" ██████ ");
-            }
+            buffer.append(i == 2 ? " ██     " : " ██████ ");
             break;
-
           case 'L':
-            if (i == 2) {
-              buffer.append("     ██ ");
-            } else {
-              buffer.append(" ██████ ");
-            }
+            buffer.append(i == 2 ? "     ██ " : " ██████ ");
             break;
-
           case 'S':
-            if (i == 2) {
-              buffer.append("   ████ ");
-            } else {
-              buffer.append(" ████   ");
-            }
+            buffer.append(i == 2 ? "   ████ " : " ████   ");
             break;
-
           case 'T':
-            if (i == 2) {
-              buffer.append("   ██   ");
-            } else {
-              buffer.append(" ██████ ");
-            }
+            buffer.append(i == 2 ? "   ██   " : " ██████ ");
             break;
-
           case 'Z':
-            if (i == 2) {
-              buffer.append(" ████   ");
-            } else {
-              buffer.append("   ████ ");
-            }
-            break;
-
-          default:
+            buffer.append(i == 2 ? " ████   " : "   ████ ");
             break;
         }
-
-        if (pieceType != 'I' && pieceType != 'O') {
+        if (pieceType != 'I' && pieceType != 'O')
           j = 5;
-        }
-
       }
-
       System.out.print(buffer);
     }
   }
@@ -276,54 +215,42 @@ public class GameHandler {
   }
 
   public void printBlock(int x, int y, String text, int totalWidth, int value) {
-    // Top
     StringBuilder buffer = new StringBuilder();
     String horLine = "━", vertLine = "┃";
     int fillerChars = (totalWidth - 4 - text.length()) / 2;
 
     buffer.append("┏");
 
-    for (int i = 0; i < fillerChars; i++) {
+    for (int i = 0; i < fillerChars; i++)
       buffer.append(horLine);
-    }
 
     buffer.append(" " + text + " ");
 
-    for (int i = 0; i < fillerChars; i++) {
+    for (int i = 0; i < fillerChars; i++)
       buffer.append(horLine);
-    }
 
     buffer.append("┓");
-
     TerminalUtils.moveCursorTo(x, y);
     System.out.print(buffer);
 
-    // Middle
     buffer = new StringBuilder();
     buffer.append(vertLine);
-
     int valueLength = String.valueOf(value).length();
 
-    for (int i = 0; i < totalWidth - 2 - valueLength; i++) {
+    for (int i = 0; i < totalWidth - 2 - valueLength; i++)
       buffer.append(" ");
-    }
 
-    buffer.append(value);
-    buffer.append(vertLine);
-
+    buffer.append(value).append(vertLine);
     TerminalUtils.moveCursorTo(x, y + 1);
     System.out.print(buffer);
 
-    // Bottom
     buffer = new StringBuilder();
     buffer.append("┗");
 
-    for (int i = 0; i < totalWidth - 2; i++) {
+    for (int i = 0; i < totalWidth - 2; i++)
       buffer.append(horLine);
-    }
 
     buffer.append("┛");
-
     TerminalUtils.moveCursorTo(x, y + 2);
     System.out.print(buffer);
   }
@@ -336,10 +263,8 @@ public class GameHandler {
     boolean isValidPosition = this.currentPiece.draw(gameState);
 
     if (!isValidPosition) {
-      try {
-        UtilFunctions.gameRecap(this.terminal, score, level, linesDeleted);
-      } catch (Exception e) {
-      }
+      UtilFunctions.stopGame = true;
+      return;
     }
 
     this.drawState();
@@ -353,7 +278,8 @@ public class GameHandler {
     this.currentPiece.erase(gameState);
     this.currentPiece.rotate(gameState);
     this.currentPiece.draw(gameState);
-    this.drawState();
+
+    drawState();
   }
 
   public synchronized void movePieceDown() {
@@ -365,21 +291,22 @@ public class GameHandler {
 
     if (!moved) {
       this.currentPiece.draw(gameState);
-
       this.currentPiece = null;
 
       try {
-        this.checkRowsToDelete();
+        checkRowsToDelete();
         UtilFunctions.playBlockPlaced();
-        this.createNewPiece();
+        createNewPiece();
+
+        if (UtilFunctions.stopGame)
+          return;
       } catch (Exception e) {
         e.printStackTrace();
       }
-    } else {
+    } else
       this.currentPiece.draw(gameState);
-    }
 
-    this.drawState();
+    drawState();
   }
 
   public synchronized void movePieceRight() {
@@ -389,7 +316,8 @@ public class GameHandler {
     this.currentPiece.erase(gameState);
     this.currentPiece.moveRight(gameState);
     this.currentPiece.draw(gameState);
-    this.drawState();
+
+    drawState();
   }
 
   public synchronized void movePieceLeft() {
@@ -399,7 +327,8 @@ public class GameHandler {
     this.currentPiece.erase(gameState);
     this.currentPiece.moveLeft(gameState);
     this.currentPiece.draw(gameState);
-    this.drawState();
+
+    drawState();
   }
 
   public synchronized void moveOnBottom() {
@@ -416,18 +345,20 @@ public class GameHandler {
     this.currentPiece.erase(gameState);
     this.currentPiece.moveDown(gameState, ghostCoords[0][0]);
     this.currentPiece.draw(gameState);
-
     this.currentPiece = null;
 
     try {
-      this.checkRowsToDelete();
+      checkRowsToDelete();
       UtilFunctions.playBlockPlaced();
-      this.createNewPiece();
+      createNewPiece();
+
+      if (UtilFunctions.stopGame)
+        return;
     } catch (Exception e) {
       e.printStackTrace();
     }
 
-    this.drawState();
+    drawState();
   }
 
   public void checkRowsToDelete() {
@@ -437,8 +368,7 @@ public class GameHandler {
     int rowsToDelete = 0;
 
     for (int i = sizeY - 1; i >= 0; i--) {
-      boolean full = true;
-      boolean empty = true;
+      boolean full = true, empty = true;
 
       for (int j = 0; j < sizeX; j++) {
         if (gameState[i][j] == '\u0000')
@@ -455,7 +385,7 @@ public class GameHandler {
     }
 
     if (rowsToDelete == 0) {
-      this.blockInput = false;
+      blockInput = false;
       return;
     }
 
@@ -463,7 +393,7 @@ public class GameHandler {
       deleteRow(rowIndexes[i]);
 
     UtilFunctions.playLineBreak(rowsToDelete);
-    this.drawState();
+    drawState();
 
     try {
       Thread.sleep(500);
@@ -472,8 +402,9 @@ public class GameHandler {
     }
 
     removeRows(rowIndexes, rowsToDelete);
-    this.drawState();
-    this.blockInput = false;
+    drawState();
+
+    blockInput = false;
   }
 
   private void deleteRow(int rowIndex) {
@@ -485,6 +416,7 @@ public class GameHandler {
 
     for (int i = sizeY - 1; i >= 0; i--) {
       boolean toDelete = false;
+
       for (int r = 0; r < rowsToDelete; r++) {
         if (i == rowIndexes[r]) {
           toDelete = true;
@@ -493,9 +425,8 @@ public class GameHandler {
       }
 
       if (!toDelete) {
-        if (i != targetRow) {
+        if (i != targetRow)
           System.arraycopy(gameState[i], 0, gameState[targetRow], 0, sizeX);
-        }
         targetRow--;
       }
     }
@@ -503,19 +434,20 @@ public class GameHandler {
     for (int i = targetRow; i >= 0; i--)
       Arrays.fill(gameState[i], '\u0000');
 
-    this.updateScore(rowsToDelete);
+    updateScore(rowsToDelete);
   }
 
   public void updateScore(int rowsToDelete) {
     this.linesDeleted += rowsToDelete;
-    int newLevel = Math.min(linesDeleted / 10 + 1, 20);
 
+    int newLevel = Math.min(linesDeleted / 10 + 1, 20);
     if (newLevel != this.level) {
       UtilFunctions.playLevelUp();
       this.level = newLevel;
     }
 
     int mult = 200 * (rowsToDelete - 1) + 100 + (rowsToDelete == 4 ? 100 : 0);
+
     this.score += mult * this.level;
 
     TerminalUtils.moveCursorTo(0, 150);
