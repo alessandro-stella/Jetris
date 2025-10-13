@@ -103,81 +103,95 @@ public class UtilFunctions {
     playGameOver();
     Thread.sleep(1500);
 
-    System.out.print("\033[2J\033[H"); // pulisce il terminale
-    System.out.print("\033[?25h"); // mostra il cursore
+    System.out.print("\033[2J\033[H");
     System.out.flush();
 
-    UtilFunctions.printLogo(gameOverLogo, 8);
+    UtilFunctions.printLogo(gameOverLogo, 2);
 
     String[] borders = { "┏", "┓", "┗", "┛" };
     String vertLine = "┃";
     String horLine = "━";
 
-    // Determina larghezza interna
-    int innerWidth = Math.max(9, ("Score: " + score).length() + 2);
-    if (innerWidth % 2 == 0)
-      innerWidth++;
+    int statsWidth = Math.max(9, ("Score: " + score).length() + 2);
+    if (statsWidth % 2 == 0)
+      statsWidth++;
 
-    int offsetX = (TERMINAL_WIDTH - innerWidth - 2) / 2;
+    int infoWidth = 20;
+    int spacing = 3;
+    int totalWidth = statsWidth + 2 + spacing + infoWidth + 2;
 
-    // Bottom line
+    int offsetX = (TERMINAL_WIDTH - totalWidth) / 2;
+    int infoOffsetX = offsetX + statsWidth + 2 + spacing;
+
+    // Build stats
     StringBuilder bottom = new StringBuilder();
     bottom.append(borders[2]);
-    for (int i = 0; i < innerWidth; i++)
+    for (int i = 0; i < statsWidth; i++)
       bottom.append(horLine);
     bottom.append(borders[3]);
 
-    // Empty line
     StringBuilder emptyLine = new StringBuilder();
     emptyLine.append(vertLine);
-    for (int i = 0; i < innerWidth; i++)
+    for (int i = 0; i < statsWidth; i++)
       emptyLine.append(" ");
     emptyLine.append(vertLine);
 
-    // Header ┏── Stats ──┓
     StringBuilder header = new StringBuilder();
     header.append(borders[0]);
-    for (int i = 0; i < (innerWidth - 7) / 2; i++)
+    for (int i = 0; i < (statsWidth - 7) / 2; i++)
       header.append(horLine);
     header.append(" Stats ");
-    for (int i = 0; i < (innerWidth - 7) / 2; i++)
+    for (int i = 0; i < (statsWidth - 7) / 2; i++)
       header.append(horLine);
     header.append(borders[1]);
 
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1]);
+    // Print stats
+    int baseY = FIELD_TL[1] + 6;
+    TerminalUtils.moveCursorTo(offsetX, baseY);
     System.out.print(header);
 
-    // Riga vuota sotto header
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 1);
+    TerminalUtils.moveCursorTo(offsetX, baseY + 1);
     System.out.print(emptyLine);
 
-    // Funzione helper per le statistiche
+    TerminalUtils.moveCursorTo(offsetX, baseY + 2);
+    System.out.print(makeStatLine(statsWidth, "Score:", String.valueOf(score)));
 
-    // Score
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 2);
-    System.out.print(makeStatLine(innerWidth, "Score:", String.valueOf(score)));
-
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 3);
+    TerminalUtils.moveCursorTo(offsetX, baseY + 3);
     System.out.print(emptyLine);
 
-    // Level
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 4);
-    System.out.print(makeStatLine(innerWidth, "Level:", String.valueOf(level)));
+    TerminalUtils.moveCursorTo(offsetX, baseY + 4);
+    System.out.print(makeStatLine(statsWidth, "Level:", String.valueOf(level)));
 
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 5);
+    TerminalUtils.moveCursorTo(offsetX, baseY + 5);
     System.out.print(emptyLine);
 
-    // Lines
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 6);
-    System.out.print(makeStatLine(innerWidth, "Lines:", String.valueOf(lines)));
+    TerminalUtils.moveCursorTo(offsetX, baseY + 6);
+    System.out.print(makeStatLine(statsWidth, "Lines:", String.valueOf(lines)));
 
-    // Empty + bottom
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 7);
+    TerminalUtils.moveCursorTo(offsetX, baseY + 7);
     System.out.print(emptyLine);
-    TerminalUtils.moveCursorTo(offsetX, FIELD_TL[1] + 8);
+
+    TerminalUtils.moveCursorTo(offsetX, baseY + 8);
     System.out.print(bottom);
 
-    // Input loop
+    String[] infoLines = {
+        borders[0] + horLine.repeat(infoWidth / 2 - 5) + " Controls " + horLine.repeat(infoWidth / 2 - 5) + borders[1],
+        vertLine + " ".repeat(infoWidth) + vertLine,
+        vertLine + " ".repeat(infoWidth) + vertLine,
+        vertLine + padRight("  [R] Restart game", infoWidth) + vertLine,
+        vertLine + " ".repeat(infoWidth) + vertLine,
+        vertLine + padRight("  [Any] Exit game", infoWidth) + vertLine,
+        vertLine + " ".repeat(infoWidth) + vertLine,
+        vertLine + " ".repeat(infoWidth) + vertLine,
+        borders[2] + horLine.repeat(infoWidth) + borders[3]
+    };
+
+    for (int i = 0; i < infoLines.length; i++) {
+      TerminalUtils.moveCursorTo(infoOffsetX, baseY + i);
+      System.out.print(infoLines[i]);
+    }
+
+    // Loop input
     long lastTime = 0;
     int lastKey = -1;
     long delay = 100;
@@ -190,8 +204,10 @@ public class UtilFunctions {
         if (ch != lastKey || (now - lastTime) >= delay) {
           switch (ch) {
             case 'r':
-              System.out.print("HOLA!");
-              break;
+            case 'R':
+              System.out.print("CIOLA");
+              return;
+
             default:
               closeGame(terminal);
               return;
@@ -203,7 +219,16 @@ public class UtilFunctions {
     }
   }
 
+  private static String padRight(String text, int width) {
+    int pad = Math.max(0, width - text.length());
+    return text + " ".repeat(pad);
+  }
+
   public static void closeGame(Terminal terminal) throws Exception {
+    System.out.print("\033[2J\033[H");
+    System.out.print("\033[?25h");
+    System.out.flush();
+
     terminal.close();
     System.exit(0);
   }
