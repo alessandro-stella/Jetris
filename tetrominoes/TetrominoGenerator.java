@@ -30,7 +30,7 @@ public class TetrominoGenerator {
         break;
 
       case 'J':
-        returnValue = new CPiece(x, y);
+        returnValue = new JPiece(x, y);
         break;
 
       case 'L':

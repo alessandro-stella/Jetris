@@ -115,7 +115,7 @@ public class Jetris {
               break;
 
             case 'c':
-              game.movePieceLeft();
+              game.easterEgg();
               break;
 
             case 32: // Space

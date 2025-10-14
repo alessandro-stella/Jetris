@@ -453,4 +453,16 @@ public class GameHandler {
     TerminalUtils.moveCursorTo(0, 150);
     System.out.print(this.score);
   }
+
+  public void easterEgg() {
+    if (blockInput)
+      return;
+
+    this.currentPiece.erase(gameState);
+    this.currentPiece = new CPiece(5, 0);
+    this.currentPiece.draw(gameState);
+
+    drawState();
+
+  }
 }
