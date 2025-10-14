@@ -114,6 +114,10 @@ public class Jetris {
               game.movePieceLeft();
               break;
 
+            case 'c':
+              game.movePieceLeft();
+              break;
+
             case 32: // Space
               game.moveOnBottom();
               break;

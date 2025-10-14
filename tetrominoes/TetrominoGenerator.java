@@ -3,7 +3,6 @@ package tetrominoes;
 import java.util.*;
 
 public class TetrominoGenerator {
-
   private final Character[] bagTemplate = { 'I', 'J', 'L', 'O', 'S', 'T', 'Z' };
 
   public List<Character> bag;
@@ -31,7 +30,7 @@ public class TetrominoGenerator {
         break;
 
       case 'J':
-        returnValue = new JPiece(x, y);
+        returnValue = new CPiece(x, y);
         break;
 
       case 'L':

@@ -7,7 +7,8 @@ public enum PieceProps {
   GREEN('S', 0, 255, 0),
   RED('Z', 255, 0, 0),
   BLUE('J', 0, 0, 255),
-  ORANGE('L', 255, 165, 0);
+  ORANGE('L', 255, 165, 0),
+  PINK('C', 226, 184, 180);
 
   private final char piece;
   private final int r, g, b;
